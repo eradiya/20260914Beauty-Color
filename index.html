@@ -1,0 +1,2753 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>뷰티 컬러 밸런스: 주조·보조·강조색 면적비 시뮬레이터</title>
+  <meta name="description" content="뷰티미용전공 색채학 6주차·13주차 실습을 위한 주조색(70%), 보조색(25%), 강조색(5%) 면적비 설계 및 역할 분석 인터랙티브 시뮬레이터" />
+
+  <!-- Google Web Fonts (Pretendard 대체 및 모던 고딕/세리프) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Noto+Sans+KR:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ==========================================================================
+       1. CSS 변수 및 디자인 토큰 (K-Beauty Luxury & Editorial Dark/Light)
+       ========================================================================== */
+    :root {
+      /* 다크 에스테틱 테마 (기본) */
+      --bg-main: #0c0d10;
+      --bg-panel: rgba(22, 24, 29, 0.85);
+      --bg-panel-solid: #15171d;
+      --bg-card: rgba(30, 33, 41, 0.7);
+      --bg-card-hover: rgba(40, 44, 55, 0.85);
+      --bg-input: #1b1e26;
+      --border-color: rgba(255, 255, 255, 0.08);
+      --border-color-focus: rgba(255, 255, 255, 0.25);
+      
+      --text-primary: #f5f6f9;
+      --text-secondary: #9aa0ae;
+      --text-muted: #646b7a;
+      
+      --accent-brand: #e8a598; /* 은은한 럭셔리 로즈골드 톤 */
+      --accent-brand-glow: rgba(232, 165, 152, 0.25);
+      
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --radius-full: 9999px;
+      
+      --shadow-subtle: 0 4px 20px rgba(0, 0, 0, 0.35);
+      --shadow-card: 0 10px 30px rgba(0, 0, 0, 0.45);
+      --glass-blur: blur(16px);
+      
+      /* 동적 컬러 변수 (JS에서 실시간 업데이트) */
+      --color-dominant: #F6ECE3; /* 주조색: 밀키 누드 웜베이지 */
+      --color-sub: #E29578;      /* 보조색: 소프트 테라코타 코랄 */
+      --color-accent: #B53838;   /* 강조색: 딥 칠리 레드 */
+      
+      /* 비율 변수 (퍼센트) */
+      --ratio-dominant: 70;
+      --ratio-sub: 25;
+      --ratio-accent: 5;
+    }
+
+    [data-theme="light"] {
+      --bg-main: #f7f6f4;
+      --bg-panel: rgba(255, 255, 255, 0.88);
+      --bg-panel-solid: #ffffff;
+      --bg-card: rgba(243, 241, 237, 0.8);
+      --bg-card-hover: rgba(235, 232, 226, 0.95);
+      --bg-input: #ffffff;
+      --border-color: rgba(0, 0, 0, 0.08);
+      --border-color-focus: rgba(0, 0, 0, 0.2);
+      
+      --text-primary: #18191c;
+      --text-secondary: #5e6472;
+      --text-muted: #8e95a5;
+      
+      --accent-brand: #c46855;
+      --accent-brand-glow: rgba(196, 104, 85, 0.18);
+      
+      --shadow-subtle: 0 4px 20px rgba(0, 0, 0, 0.06);
+      --shadow-card: 0 12px 32px rgba(0, 0, 0, 0.08);
+    }
+
+    /* Reset & Base */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      width: 100%;
+      min-height: 100%;
+      background-color: var(--bg-main);
+      color: var(--text-primary);
+      font-family: 'Noto Sans KR', 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      overflow-x: hidden;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    /* Background Ambient Glows */
+    .ambient-glow {
+      position: fixed;
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      filter: blur(140px);
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.18;
+      transition: all 0.8s ease;
+    }
+    .glow-1 {
+      top: -150px;
+      left: -100px;
+      background: var(--color-dominant);
+    }
+    .glow-2 {
+      bottom: -150px;
+      right: -100px;
+      background: var(--color-sub);
+    }
+    .glow-3 {
+      top: 40%;
+      left: 45%;
+      width: 400px;
+      height: 400px;
+      background: var(--color-accent);
+      opacity: 0.12;
+    }
+
+    /* App Container */
+    .app-layout {
+      position: relative;
+      z-index: 1;
+      max-width: 1680px;
+      margin: 0 auto;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: 24px 28px;
+      gap: 20px;
+    }
+
+    /* ==========================================================================
+       2. 헤더 영역 (Header & Meta)
+       ========================================================================== */
+    header.app-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 24px;
+      background: var(--bg-panel);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-subtle);
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .brand-logo-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: var(--radius-md);
+      background: linear-gradient(135deg, var(--color-dominant), var(--color-sub), var(--color-accent));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 14px var(--accent-brand-glow);
+      transition: background 0.4s ease;
+      flex-shrink: 0;
+    }
+    .brand-logo-icon svg {
+      width: 22px;
+      height: 22px;
+      stroke: #ffffff;
+      fill: none;
+      filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5));
+    }
+
+    .brand-title-wrap h1 {
+      font-size: 1.35rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .brand-title-wrap h1 span.badge {
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 3px 9px;
+      border-radius: var(--radius-full);
+      background: var(--accent-brand-glow);
+      color: var(--accent-brand);
+      border: 1px solid var(--accent-brand);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .brand-title-wrap p {
+      font-size: 0.84rem;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 8px 16px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-color);
+      background: var(--bg-card);
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      user-select: none;
+      text-decoration: none;
+    }
+    .btn:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--border-color-focus);
+      transform: translateY(-1px);
+    }
+    .btn:active {
+      transform: translateY(0);
+    }
+    .btn-primary {
+      background: var(--accent-brand);
+      color: #ffffff;
+      border-color: transparent;
+      box-shadow: 0 4px 14px var(--accent-brand-glow);
+    }
+    .btn-primary:hover {
+      filter: brightness(1.08);
+      background: var(--accent-brand);
+    }
+    .btn-sm {
+      padding: 5px 11px;
+      font-size: 0.78rem;
+      border-radius: var(--radius-sm);
+    }
+
+    /* ==========================================================================
+       3. 메인 그리드 워크스페이스 (좌측 컨트롤 + 우측 캔버스)
+       ========================================================================== */
+    .workspace-grid {
+      display: grid;
+      grid-template-columns: 460px 1fr;
+      gap: 24px;
+      flex: 1;
+    }
+
+    @media (max-width: 1200px) {
+      .workspace-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* 패널 공통 */
+    .panel {
+      background: var(--bg-panel);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-shadow: var(--shadow-card);
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .panel-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .panel-subtitle {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+
+    /* ==========================================================================
+       4. 좌측 패널: 색상 선택 & 역할 슬롯 & 스왑
+       ========================================================================== */
+    .color-slots-container {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .color-slot-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      transition: all 0.25s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .color-slot-card::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 5px;
+      background: var(--slot-color);
+      transition: background 0.3s ease;
+    }
+    .color-slot-card:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--border-color-focus);
+    }
+
+    .slot-meta {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .slot-role-tag {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .slot-role-tag .role-ratio-badge {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.78rem;
+      padding: 1px 6px;
+      border-radius: var(--radius-sm);
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-primary);
+    }
+    .slot-name-korean {
+      font-size: 0.96rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .slot-desc {
+      font-size: 0.76rem;
+      color: var(--text-secondary);
+      line-height: 1.3;
+    }
+
+    .slot-color-interactive {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* 네이티브 컬러 피커 커스텀 래퍼 */
+    .color-picker-button-wrap {
+      position: relative;
+      width: 46px;
+      height: 46px;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      flex-shrink: 0;
+    }
+    .color-picker-button-wrap:hover {
+      transform: scale(1.08);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+    }
+    .color-picker-button-wrap input[type="color"] {
+      position: absolute;
+      top: -10px;
+      left: -10px;
+      width: 70px;
+      height: 70px;
+      border: none;
+      outline: none;
+      cursor: pointer;
+      opacity: 0;
+    }
+    .color-preview-box {
+      width: 100%;
+      height: 100%;
+      transition: background-color 0.2s ease;
+    }
+
+    .hex-input-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      width: 90px;
+    }
+    .hex-input-wrap label {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-family: 'Montserrat', sans-serif;
+    }
+    .hex-input {
+      width: 100%;
+      padding: 6px 8px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      font-family: 'Montserrat', monospace;
+      font-size: 0.84rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      text-align: center;
+      transition: border 0.2s ease;
+      text-transform: uppercase;
+    }
+    .hex-input:focus {
+      outline: none;
+      border-color: var(--accent-brand);
+      box-shadow: 0 0 0 2px var(--accent-brand-glow);
+    }
+
+    /* 역할 스왑 (Role Swap) 바 */
+    .role-swap-toolbar {
+      background: var(--bg-card);
+      border: 1px dashed var(--border-color-focus);
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .role-swap-title {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .swap-btn-group {
+      display: flex;
+      gap: 6px;
+    }
+
+    /* K-뷰티 트렌드 배색 프리셋 그리드 */
+    .preset-section {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .preset-header {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .presets-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+    .preset-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 8px 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.2s ease;
+      text-align: left;
+    }
+    .preset-card:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--border-color-focus);
+      transform: translateY(-2px);
+    }
+    .preset-swatches {
+      display: flex;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      overflow: hidden;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+      flex-shrink: 0;
+    }
+    .preset-swatch-slice {
+      height: 100%;
+    }
+    .preset-info {
+      overflow: hidden;
+    }
+    .preset-name {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .preset-tone {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    /* ==========================================================================
+       5. 하단 컨트롤러: 면적비 조절 슬라이더 & 황금비율 버튼
+       ========================================================================== */
+    .ratio-controller-section {
+      background: var(--bg-panel);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 20px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      box-shadow: var(--shadow-card);
+    }
+
+    .ratio-controller-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .ratio-preset-chips {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .chip-btn {
+      padding: 4px 10px;
+      font-size: 0.74rem;
+      font-weight: 600;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--border-color);
+      background: var(--bg-card);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: 'Montserrat', sans-serif;
+    }
+    .chip-btn:hover {
+      background: var(--bg-card-hover);
+      color: var(--text-primary);
+      border-color: var(--border-color-focus);
+    }
+    .chip-btn.active {
+      background: var(--accent-brand);
+      color: #ffffff;
+      border-color: transparent;
+    }
+
+    /* 슬라이더 컨트롤러 그룹 */
+    .sliders-group {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .slider-row {
+      display: grid;
+      grid-template-columns: 100px 1fr 65px 36px;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .slider-label-block {
+      display: flex;
+      flex-direction: column;
+    }
+    .slider-role-name {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .slider-role-sub {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+    }
+
+    /* 커스텀 슬라이더 트랙 */
+    .range-slider-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .custom-range {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 8px;
+      border-radius: var(--radius-full);
+      background: rgba(255, 255, 255, 0.1);
+      outline: none;
+      transition: background 0.2s ease;
+      cursor: pointer;
+    }
+    [data-theme="light"] .custom-range {
+      background: rgba(0, 0, 0, 0.1);
+    }
+    .custom-range::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--thumb-color, #ffffff);
+      cursor: grab;
+      border: 3px solid #ffffff;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .custom-range::-webkit-slider-thumb:active {
+      cursor: grabbing;
+      transform: scale(1.22);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
+    }
+    .custom-range::-moz-range-thumb {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--thumb-color, #ffffff);
+      cursor: grab;
+      border: 3px solid #ffffff;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+      transition: transform 0.15s ease;
+    }
+
+    .slider-value-display {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      text-align: right;
+    }
+
+    /* 고정(Lock) 토글 버튼 */
+    .lock-toggle-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-color);
+      background: var(--bg-card);
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .lock-toggle-btn:hover {
+      color: var(--text-primary);
+      border-color: var(--border-color-focus);
+    }
+    .lock-toggle-btn.locked {
+      background: rgba(232, 165, 152, 0.2);
+      color: var(--accent-brand);
+      border-color: var(--accent-brand);
+    }
+    .lock-toggle-btn svg {
+      width: 15px;
+      height: 15px;
+    }
+
+    /* 면적비 통합 프로그레스 바 */
+    .ratio-stacked-bar-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .ratio-stacked-bar {
+      width: 100%;
+      height: 12px;
+      border-radius: var(--radius-full);
+      overflow: hidden;
+      display: flex;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-color);
+    }
+    .bar-segment {
+      height: 100%;
+      transition: width 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), background-color 0.3s ease;
+      position: relative;
+    }
+    .bar-segment-dominant { background-color: var(--color-dominant); width: 70%; }
+    .bar-segment-sub { background-color: var(--color-sub); width: 25%; }
+    .bar-segment-accent { background-color: var(--color-accent); width: 5%; }
+
+    .ratio-bar-legend {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.72rem;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    /* ==========================================================================
+       6. 우측 패널: 시각화 캔버스 (듀얼 뷰 & 뷰티 무드)
+       ========================================================================== */
+    .canvas-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .canvas-nav-tabs {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg-card);
+      padding: 5px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-color);
+      width: fit-content;
+    }
+    .tab-btn {
+      padding: 7px 16px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .tab-btn:hover {
+      color: var(--text-primary);
+    }
+    .tab-btn.active {
+      background: var(--bg-panel-solid);
+      color: var(--text-primary);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .view-content-container {
+      position: relative;
+      min-height: 480px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .view-pane {
+      display: none;
+      width: 100%;
+      height: 100%;
+      animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .view-pane.active {
+      display: flex;
+      flex-direction: column;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* -------------------------------------------------------------
+       A 뷰: SVG 정밀 도넛 차트 (Donut Chart)
+       ------------------------------------------------------------- */
+    .donut-view-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      gap: 20px;
+      height: 100%;
+    }
+
+    .donut-chart-stage {
+      position: relative;
+      width: 320px;
+      height: 320px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .donut-svg {
+      width: 100%;
+      height: 100%;
+      transform: rotate(-90deg); /* 12시 방향부터 시작 */
+      overflow: visible;
+    }
+    .donut-slice {
+      fill: none;
+      stroke-width: 34;
+      stroke-linecap: round;
+      cursor: pointer;
+      transition: stroke-dasharray 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+                  stroke-dashoffset 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+                  stroke 0.3s ease,
+                  transform 0.2s ease;
+      transform-origin: 50% 50%;
+    }
+    .donut-slice:hover {
+      stroke-width: 38;
+      filter: brightness(1.1);
+    }
+
+    .donut-center-badge {
+      position: absolute;
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      background: var(--bg-panel-solid);
+      border: 1px solid var(--border-color);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 16px;
+      pointer-events: none;
+      transition: background 0.3s ease;
+    }
+    .center-ratio-formula {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.02em;
+    }
+    .center-label {
+      font-size: 0.72rem;
+      color: var(--accent-brand);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-top: 2px;
+    }
+    .center-concept-chip {
+      font-size: 0.74rem;
+      color: var(--text-secondary);
+      margin-top: 6px;
+      padding: 2px 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: var(--radius-full);
+    }
+
+    .donut-legend-cards {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      width: 100%;
+      max-width: 620px;
+      flex-wrap: wrap;
+    }
+    .donut-legend-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
+      min-width: 160px;
+      transition: all 0.2s ease;
+    }
+    .donut-legend-card:hover {
+      background: var(--bg-card-hover);
+      transform: translateY(-2px);
+    }
+    .legend-color-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+      flex-shrink: 0;
+    }
+    .legend-text-col {
+      display: flex;
+      flex-direction: column;
+    }
+    .legend-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .legend-pct {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+    }
+
+    /* -------------------------------------------------------------
+       B 뷰: 에디토리얼 무드보드 추상화 레이아웃 (Abstract Moodboard)
+       ------------------------------------------------------------- */
+    .moodboard-stage {
+      width: 100%;
+      height: 480px;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-color);
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow-subtle);
+      background-color: var(--color-dominant);
+      transition: background-color 0.4s ease;
+      display: flex;
+      padding: 24px;
+      gap: 20px;
+    }
+
+    /* 무드보드 배경 텍스처 & 매거진 무드 타이포 */
+    .moodboard-bg-watermark {
+      position: absolute;
+      right: 20px;
+      bottom: 16px;
+      font-family: 'Playfair Display', serif;
+      font-size: 4.8rem;
+      font-weight: 600;
+      font-style: italic;
+      color: rgba(0, 0, 0, 0.08);
+      pointer-events: none;
+      line-height: 0.9;
+      user-select: none;
+      z-index: 1;
+      text-transform: uppercase;
+    }
+    [data-theme="dark"] .moodboard-bg-watermark {
+      color: rgba(255, 255, 255, 0.08);
+    }
+
+    /* 주조색 레이어 안내 */
+    .dominant-canvas-badge {
+      position: absolute;
+      top: 24px;
+      left: 24px;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(10px);
+      color: #ffffff;
+      padding: 6px 14px;
+      border-radius: var(--radius-full);
+      font-size: 0.76rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      z-index: 5;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+    .dominant-canvas-badge .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--color-dominant);
+      border: 1px solid rgba(255,255,255,0.6);
+    }
+
+    /* 서브색 블록 영역 (보조색 비율에 따라 면적이 실시간 가변) */
+    .moodboard-sub-block {
+      background-color: var(--color-sub);
+      border-radius: var(--radius-md);
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 20px;
+      position: relative;
+      z-index: 2;
+      transition: width 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+                  height 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+                  background-color 0.3s ease;
+      min-width: 140px;
+      max-width: 70%;
+    }
+
+    .sub-block-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(8px);
+      color: #ffffff;
+      padding: 4px 10px;
+      border-radius: var(--radius-full);
+      font-size: 0.72rem;
+      font-weight: 600;
+      width: fit-content;
+    }
+    .sub-block-title {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #ffffff;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    /* 액센트 컬러 포인트 오브젝트 (강조색 비율에 따라 크기 및 포인트 강조) */
+    .moodboard-accent-element {
+      position: absolute;
+      right: 36px;
+      top: 50%;
+      transform: translateY(-50%);
+      background-color: var(--color-accent);
+      border-radius: var(--radius-lg);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+      border: 2px solid rgba(255, 255, 255, 0.4);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      gap: 8px;
+      z-index: 3;
+      transition: width 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+                  height 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+                  background-color 0.3s ease;
+      text-align: center;
+    }
+    .accent-element-pill {
+      font-size: 0.68rem;
+      font-weight: 700;
+      background: #ffffff;
+      color: #000000;
+      padding: 2px 8px;
+      border-radius: var(--radius-full);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+    .accent-element-value {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #ffffff;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    }
+
+    /* 플로팅 기하학적 스트라이프 (강조 포인트 연출) */
+    .floating-stripe {
+      position: absolute;
+      left: 45%;
+      bottom: 30px;
+      height: 8px;
+      background: var(--color-accent);
+      border-radius: var(--radius-full);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      z-index: 4;
+      transition: width 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), background-color 0.3s ease;
+    }
+
+    /* -------------------------------------------------------------
+       C 뷰: K-뷰티 메이크업 페이스 & 네일 시뮬레이션
+       ------------------------------------------------------------- */
+    .beauty-face-view-wrap {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      align-items: center;
+      height: 100%;
+      min-height: 480px;
+    }
+
+    @media (max-width: 860px) {
+      .beauty-face-view-wrap {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .beauty-visual-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      position: relative;
+    }
+    .visual-box-tag {
+      position: absolute;
+      top: 14px;
+      left: 16px;
+      font-size: 0.74rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .face-svg-wrap {
+      width: 220px;
+      height: 290px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 15px;
+    }
+    .face-svg {
+      width: 100%;
+      height: 100%;
+      filter: drop-shadow(0 10px 24px rgba(0,0,0,0.3));
+    }
+
+    .nails-display-wrap {
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+      margin-top: 20px;
+    }
+    .nail-finger {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+    .nail-tip {
+      width: 28px;
+      border-radius: 14px 14px 6px 6px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+      border: 1px solid rgba(255,255,255,0.2);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .nail-tip-1 { height: 60px; background-color: var(--color-dominant); }
+    .nail-tip-2 { height: 68px; background-color: var(--color-sub); }
+    .nail-tip-3 { height: 74px; background-color: var(--color-dominant); }
+    .nail-tip-4 { height: 66px; background-color: var(--color-accent); }
+    .nail-tip-5 { height: 54px; background-color: var(--color-sub); }
+    
+    .nail-tip::after {
+      content: "";
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      width: 6px;
+      height: 24px;
+      background: rgba(255, 255, 255, 0.45);
+      border-radius: 4px;
+      filter: blur(1px);
+    }
+    .nail-role-label {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    /* -------------------------------------------------------------
+       D 뷰: Split 모드 (도넛 + 무드보드 나란히 보기)
+       ------------------------------------------------------------- */
+    .split-view-wrap {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      height: 100%;
+      min-height: 480px;
+    }
+    @media (max-width: 992px) {
+      .split-view-wrap {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* ==========================================================================
+       7. 색채학 학습 & 조화도 분석 코멘터리 패널
+       ========================================================================== */
+    .education-insight-card {
+      background: var(--bg-panel);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 20px 24px;
+      box-shadow: var(--shadow-card);
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 24px;
+      align-items: center;
+    }
+    @media (max-width: 900px) {
+      .education-insight-card {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .insight-text-group h3 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-primary);
+    }
+    .insight-desc {
+      font-size: 0.86rem;
+      color: var(--text-secondary);
+      margin-top: 6px;
+      line-height: 1.6;
+    }
+    .insight-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .insight-pill {
+      font-size: 0.74rem;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: var(--radius-full);
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+    }
+
+    .contrast-meter-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 14px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .meter-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.78rem;
+    }
+    .meter-label {
+      color: var(--text-secondary);
+    }
+    .meter-val {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .meter-bar {
+      width: 100%;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+    }
+    .meter-fill {
+      height: 100%;
+      border-radius: var(--radius-full);
+      background: var(--accent-brand);
+      transition: width 0.3s ease;
+    }
+
+    /* ==========================================================================
+       8. 모달 & 토스트 알림
+       ========================================================================== */
+    .toast-notice {
+      position: fixed;
+      bottom: 24px;
+      right: 28px;
+      background: var(--bg-panel-solid);
+      border: 1px solid var(--accent-brand);
+      color: var(--text-primary);
+      padding: 12px 20px;
+      border-radius: var(--radius-md);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      z-index: 1000;
+      transform: translateY(100px);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .toast-notice.show {
+      transform: translateY(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* 반응형 세부 패딩 */
+    @media (max-width: 640px) {
+      .app-layout {
+        padding: 12px 14px;
+        gap: 14px;
+      }
+      header.app-header {
+        padding: 14px;
+      }
+      .brand-title-wrap h1 {
+        font-size: 1.12rem;
+      }
+      .panel {
+        padding: 16px;
+      }
+      .slider-row {
+        grid-template-columns: 80px 1fr 48px 32px;
+        gap: 8px;
+      }
+    }
+  </style>
+</head>
+<body data-theme="dark">
+
+  <!-- Ambient Glow Elements -->
+  <div class="ambient-glow glow-1" id="glow1"></div>
+  <div class="ambient-glow glow-2" id="glow2"></div>
+  <div class="ambient-glow glow-3" id="glow3"></div>
+
+  <div class="app-layout">
+    
+    <!-- ====================================================================
+         헤더: 로고, 타이틀, 실습 주차, 테마 토글, 리셋 버튼
+         ==================================================================== -->
+    <header class="app-header">
+      <div class="brand-group">
+        <div class="brand-logo-icon" id="brandLogoIcon">
+          <svg viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4 5 5 0 013-4.5 4 4 0 011.5-7.5 4 4 0 017 0 4 4 0 011.5 7.5A5 5 0 0119 17a4 4 0 01-4 4H7z" />
+          </svg>
+        </div>
+        <div class="brand-title-wrap">
+          <h1>
+            뷰티 컬러 밸런스: 주조·보조·강조색 면적비 시뮬레이터
+            <span class="badge">6주차 / 13주차 실습</span>
+          </h1>
+          <p>K-Beauty Color Area Ratio Simulator for Makeup & Aesthetics Education</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <!-- 70:25:5 기본 황금비 리셋 -->
+        <button class="btn btn-sm" id="btnResetGolden" title="뷰티 배색의 기본인 70 : 25 : 5 비율로 초기화">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+            <path d="M3 3v5h5"/>
+          </svg>
+          기본 황금비 (70:25:5) 리셋
+        </button>
+
+        <!-- 배색 리포트 복사 -->
+        <button class="btn btn-sm btn-primary" id="btnExportReport" title="현재 배색과 비율을 클립보드에 복사">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+          </svg>
+          배색 코드 복사
+        </button>
+
+        <!-- 라이트/다크 테마 토글 -->
+        <button class="btn btn-sm" id="btnThemeToggle" aria-label="테마 변경">
+          <svg id="themeIcon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"/>
+            <line x1="12" y1="1" x2="12" y2="3"/>
+            <line x1="12" y1="21" x2="12" y2="23"/>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+            <line x1="1" y1="12" x2="3" y2="12"/>
+            <line x1="21" y1="12" x2="23" y2="12"/>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- ====================================================================
+         메인 워크스페이스 그리드
+         ==================================================================== -->
+    <main class="workspace-grid">
+      
+      <!-- ================================================================
+           좌측 컬럼: 색상 선택기 & 역할 교체 & K-뷰티 프리셋
+           ================================================================ -->
+      <section class="panel left-panel">
+        
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="13.5" cy="6.5" r=".5"/>
+                <circle cx="17.5" cy="10.5" r=".5"/>
+                <circle cx="8.5" cy="7.5" r=".5"/>
+                <circle cx="6.5" cy="12.5" r=".5"/>
+                <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/>
+              </svg>
+              뷰티 컬러 팔레트 선택
+            </h2>
+            <span class="panel-subtitle">주조색 · 보조색 · 강조색 3가지 핵심 컬러를 설정하세요</span>
+          </div>
+        </div>
+
+        <!-- 3구 컬러 피커 카드 리스트 -->
+        <div class="color-slots-container">
+          
+          <!-- 1. 주조색 (Dominant Color) -->
+          <div class="color-slot-card" id="slotCardDominant" style="--slot-color: var(--color-dominant);">
+            <div class="slot-meta">
+              <div class="slot-role-tag" style="color: var(--accent-brand);">
+                <span>① 주조색 (Dominant)</span>
+                <span class="role-ratio-badge" id="badgeRatioDominant">70%</span>
+              </div>
+              <div class="slot-name-korean">베이스 & 배경 톤</div>
+              <div class="slot-desc">피부 베이스, 전체 배경, 메인 의상 등 전체적인 톤의 분위기 결정</div>
+            </div>
+            <div class="slot-color-interactive">
+              <div class="color-picker-button-wrap" title="주조색 컬러 선택">
+                <input type="color" id="pickerDominant" value="#F6ECE3" />
+                <div class="color-preview-box" id="previewDominant" style="background-color: var(--color-dominant);"></div>
+              </div>
+              <div class="hex-input-wrap">
+                <label for="hexDominant">HEX</label>
+                <input type="text" class="hex-input" id="hexDominant" value="#F6ECE3" maxlength="7" />
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. 보조색 (Sub / Secondary Color) -->
+          <div class="color-slot-card" id="slotCardSub" style="--slot-color: var(--color-sub);">
+            <div class="slot-meta">
+              <div class="slot-role-tag" style="color: #60a5fa;">
+                <span>② 보조색 (Secondary)</span>
+                <span class="role-ratio-badge" id="badgeRatioSub">25%</span>
+              </div>
+              <div class="slot-name-korean">조화 & 음영 톤</div>
+              <div class="slot-desc">치크 블러셔, 아이홀 음영, 네일 서브 컬러 등 주조색을 부드럽게 보조</div>
+            </div>
+            <div class="slot-color-interactive">
+              <div class="color-picker-button-wrap" title="보조색 컬러 선택">
+                <input type="color" id="pickerSub" value="#E29578" />
+                <div class="color-preview-box" id="previewSub" style="background-color: var(--color-sub);"></div>
+              </div>
+              <div class="hex-input-wrap">
+                <label for="hexSub">HEX</label>
+                <input type="text" class="hex-input" id="hexSub" value="#E29578" maxlength="7" />
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. 강조색 (Accent Color) -->
+          <div class="color-slot-card" id="slotCardAccent" style="--slot-color: var(--color-accent);">
+            <div class="slot-meta">
+              <div class="slot-role-tag" style="color: #f87171;">
+                <span>③ 강조색 (Accent)</span>
+                <span class="role-ratio-badge" id="badgeRatioAccent">5%</span>
+              </div>
+              <div class="slot-name-korean">포인트 & 시선 집중</div>
+              <div class="slot-desc">립 포인트, 아이라이너, 글리터, 네일 파츠 등 강한 시선 유도</div>
+            </div>
+            <div class="slot-color-interactive">
+              <div class="color-picker-button-wrap" title="강조색 컬러 선택">
+                <input type="color" id="pickerAccent" value="#B53838" />
+                <div class="color-preview-box" id="previewAccent" style="background-color: var(--color-accent);"></div>
+              </div>
+              <div class="hex-input-wrap">
+                <label for="hexAccent">HEX</label>
+                <input type="text" class="hex-input" id="hexAccent" value="#B53838" maxlength="7" />
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- 핵심 교육 인터랙션: 색상 역할 순환 스왑 (Role Swap) -->
+        <div class="role-swap-toolbar">
+          <div class="role-swap-title">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m16 3 4 4-4 4"/>
+              <path d="M20 7H4"/>
+              <path d="m8 21-4-4 4-4"/>
+              <path d="M4 17h16"/>
+            </svg>
+            색상 역할 맞바꾸기 체험
+          </div>
+          <div class="swap-btn-group">
+            <button class="btn btn-sm" id="btnRotateRoles" title="주조색 → 보조색 → 강조색 순서로 색상을 한 칸씩 순환">
+              순환 회전 (Rotate)
+            </button>
+            <button class="btn btn-sm" id="btnSwapDomSub" title="주조색과 보조색 서로 맞교환">
+              주조 ⇄ 보조
+            </button>
+            <button class="btn btn-sm" id="btnSwapDomAcc" title="주조색과 강조색 서로 맞교환">
+              주조 ⇄ 강조
+            </button>
+          </div>
+        </div>
+
+        <!-- K-뷰티 트렌드 감성 배색 프리셋 컬렉션 -->
+        <div class="preset-section">
+          <div class="preset-header">
+            <span>K-뷰티 트렌드 감성 배색 프리셋</span>
+            <span style="font-size: 0.72rem; color: var(--text-muted);">클릭 시 즉시 적용</span>
+          </div>
+
+          <div class="presets-grid" id="presetsGrid">
+            <!-- JS에서 동적 생성 또는 정적 선언 (아래 스크립트 연동) -->
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ================================================================
+           우측 컬럼: 시각화 캔버스 (도넛 차트 / 추상 무드보드 / 페이스 뷰)
+           ================================================================ -->
+      <section class="panel canvas-panel">
+        
+        <div class="panel-header">
+          <div class="canvas-nav-tabs">
+            <button class="tab-btn active" data-target="view-moodboard">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect width="7" height="9" x="3" y="3" rx="1"/>
+                <rect width="7" height="5" x="14" y="3" rx="1"/>
+                <rect width="7" height="9" x="14" y="12" rx="1"/>
+                <rect width="7" height="5" x="3" y="16" rx="1"/>
+              </svg>
+              B 뷰: 추상 무드보드
+            </button>
+
+            <button class="tab-btn" data-target="view-donut">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <circle cx="12" cy="12" r="4"/>
+              </svg>
+              A 뷰: 도넛 차트
+            </button>
+
+            <button class="tab-btn" data-target="view-beauty">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2a8 8 0 0 0-8 8c0 5 8 12 8 12s8-7 8-12a8 8 0 0 0-8-8z"/>
+              </svg>
+              C 뷰: 페이스 & 네일
+            </button>
+
+            <button class="tab-btn" data-target="view-split">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect width="18" height="18" x="3" y="3" rx="2"/>
+                <line x1="12" y1="3" x2="12" y2="21"/>
+              </svg>
+              듀얼 분할 보기
+            </button>
+          </div>
+
+          <div style="font-size: 0.78rem; color: var(--text-muted); font-family: 'Montserrat', sans-serif;">
+            RATIO: <span id="headerRatioPreview" style="color: var(--accent-brand); font-weight: 700;">70 : 25 : 5</span>
+          </div>
+        </div>
+
+        <!-- 뷰 컨테이너 -->
+        <div class="view-content-container">
+          
+          <!-- ============================================================
+               B 뷰: 에디토리얼 추상 무드보드 레이아웃
+               ============================================================ -->
+          <div class="view-pane active" id="view-moodboard">
+            <div class="moodboard-stage" id="moodboardStage">
+              
+              <div class="moodboard-bg-watermark">K-BEAUTY RATIO</div>
+              
+              <!-- 주조색 캔버스 안내 배지 -->
+              <div class="dominant-canvas-badge">
+                <span class="dot"></span>
+                <span>주조색 캔버스 (DOMINANT): <strong id="mbDominantPct">70%</strong></span>
+              </div>
+
+              <!-- 보조색 가변 블록 -->
+              <div class="moodboard-sub-block" id="mbSubBlock" style="width: 48%; height: 80%;">
+                <div class="sub-block-badge">
+                  <span>보조색 영역 (SECONDARY)</span>
+                </div>
+                <div>
+                  <div class="sub-block-title" id="mbSubTitle">Sub Mood 25%</div>
+                  <div style="font-size: 0.76rem; color: rgba(255,255,255,0.8); margin-top: 4px;">
+                    메이크업 섀도우 & 치크 톤 밸런스
+                  </div>
+                </div>
+              </div>
+
+              <!-- 강조색 가변 포인트 엘리먼트 -->
+              <div class="moodboard-accent-element" id="mbAccentElement" style="width: 140px; height: 140px;">
+                <span class="accent-element-pill">ACCENT POINT</span>
+                <div class="accent-element-value" id="mbAccentValue">5%</div>
+                <div style="font-size: 0.68rem; color: #ffffff; opacity: 0.9;">시선 포커스</div>
+              </div>
+
+              <!-- 강조색 기하학적 스트라이프 바 -->
+              <div class="floating-stripe" id="mbStripe" style="width: 35%;"></div>
+
+            </div>
+          </div>
+
+          <!-- ============================================================
+               A 뷰: SVG 정밀 도넛 차트
+               ============================================================ -->
+          <div class="view-pane" id="view-donut">
+            <div class="donut-view-wrap">
+              <div class="donut-chart-stage">
+                <svg class="donut-svg" viewBox="0 0 200 200">
+                  <!-- 배경 트랙 원 -->
+                  <circle cx="100" cy="100" r="75" stroke="rgba(255,255,255,0.05)" stroke-width="32" fill="none" />
+                  <!-- 3개 섹터 (stroke-dasharray로 동적 제어) -->
+                  <circle id="donutSectorDominant" class="donut-slice" cx="100" cy="100" r="75" stroke="var(--color-dominant)" stroke-dasharray="329.8 471.2" stroke-dashoffset="0" />
+                  <circle id="donutSectorSub" class="donut-slice" cx="100" cy="100" r="75" stroke="var(--color-sub)" stroke-dasharray="117.8 471.2" stroke-dashoffset="-329.8" />
+                  <circle id="donutSectorAccent" class="donut-slice" cx="100" cy="100" r="75" stroke="var(--color-accent)" stroke-dasharray="23.5 471.2" stroke-dashoffset="-447.6" />
+                </svg>
+
+                <!-- 도넛 중앙 뱃지 -->
+                <div class="donut-center-badge">
+                  <div class="center-ratio-formula" id="centerFormula">70 : 25 : 5</div>
+                  <div class="center-label">황금 밸런스</div>
+                  <div class="center-concept-chip" id="centerConcept">안정적 클래식</div>
+                </div>
+              </div>
+
+              <!-- 도넛 차트 하단 레전드 카드 -->
+              <div class="donut-legend-cards">
+                <div class="donut-legend-card">
+                  <div class="legend-color-dot" style="background-color: var(--color-dominant);"></div>
+                  <div class="legend-text-col">
+                    <span class="legend-title">주조색 (Dominant)</span>
+                    <span class="legend-pct" id="legendPctDominant">70%</span>
+                  </div>
+                </div>
+
+                <div class="donut-legend-card">
+                  <div class="legend-color-dot" style="background-color: var(--color-sub);"></div>
+                  <div class="legend-text-col">
+                    <span class="legend-title">보조색 (Secondary)</span>
+                    <span class="legend-pct" id="legendPctSub">25%</span>
+                  </div>
+                </div>
+
+                <div class="donut-legend-card">
+                  <div class="legend-color-dot" style="background-color: var(--color-accent);"></div>
+                  <div class="legend-text-col">
+                    <span class="legend-title">강조색 (Accent)</span>
+                    <span class="legend-pct" id="legendPctAccent">5%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ============================================================
+               C 뷰: 뷰티 페이스 & 네일 그래픽 시뮬레이션
+               ============================================================ -->
+          <div class="view-pane" id="view-beauty">
+            <div class="beauty-face-view-wrap">
+              
+              <!-- 좌측: 페이스 메이크업 실루엣 -->
+              <div class="beauty-visual-box">
+                <div class="visual-box-tag">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                  </svg>
+                  Face Makeup Simulation
+                </div>
+
+                <div class="face-svg-wrap">
+                  <svg class="face-svg" viewBox="0 0 200 260" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <!-- 목 및 어깨 (주조색 바탕) -->
+                    <path d="M75 220 L75 260 L125 260 L125 220 Z" fill="var(--color-dominant)" opacity="0.9" />
+                    <!-- 얼굴 외곽 실루엣 (주조색: 피부 베이스) -->
+                    <path d="M50 80 C50 30 150 30 150 80 C150 145 135 210 100 220 C65 210 50 145 50 80 Z" fill="var(--color-dominant)" stroke="rgba(0,0,0,0.15)" stroke-width="2" />
+                    
+                    <!-- 헤어 라인 실루엣 (세련된 음영) -->
+                    <path d="M48 90 C45 40 70 20 100 20 C130 20 155 40 152 90 C140 50 120 45 100 45 C80 45 60 50 48 90 Z" fill="rgba(0,0,0,0.25)" />
+
+                    <!-- 양 볼 치크 블러셔 (보조색: 부드러운 그러데이션 블러) -->
+                    <ellipse cx="72" cy="140" rx="18" ry="12" fill="var(--color-sub)" opacity="0.65" filter="blur(4px)" />
+                    <ellipse cx="128" cy="140" rx="18" ry="12" fill="var(--color-sub)" opacity="0.65" filter="blur(4px)" />
+
+                    <!-- 아이홀 섀도우 (보조색) -->
+                    <path d="M66 106 Q78 98 90 106 Q78 103 66 106 Z" fill="var(--color-sub)" opacity="0.8" />
+                    <path d="M110 106 Q122 98 134 106 Q122 103 110 106 Z" fill="var(--color-sub)" opacity="0.8" />
+
+                    <!-- 눈썹 & 아이라인 라인 드로잉 -->
+                    <path d="M64 96 Q77 92 88 96" stroke="rgba(0,0,0,0.7)" stroke-width="2.5" stroke-linecap="round" />
+                    <path d="M112 96 Q123 92 136 96" stroke="rgba(0,0,0,0.7)" stroke-width="2.5" stroke-linecap="round" />
+                    <path d="M68 108 Q78 104 88 108" stroke="rgba(0,0,0,0.85)" stroke-width="2" stroke-linecap="round" />
+                    <path d="M112 108 Q122 104 132 108" stroke="rgba(0,0,0,0.85)" stroke-width="2" stroke-linecap="round" />
+
+                    <!-- 코 섀도우 & 노즈 브릿지 -->
+                    <path d="M98 118 L96 148 Q100 152 104 148" stroke="rgba(0,0,0,0.3)" stroke-width="1.8" stroke-linecap="round" />
+
+                    <!-- 립 포인트 (강조색: 선명한 시선 집중) -->
+                    <path d="M82 176 Q100 166 118 176 Q100 192 82 176 Z" fill="var(--color-accent)" stroke="rgba(0,0,0,0.2)" stroke-width="1" />
+                    <!-- 립 하이라이트 글리터 -->
+                    <ellipse cx="96" cy="174" rx="4" ry="1.5" fill="#ffffff" opacity="0.65" />
+                  </svg>
+                </div>
+                <div style="font-size: 0.74rem; color: var(--text-muted); margin-top: 10px;">
+                  피부 베이스(주조) · 치크&섀도우(보조) · 립 포인트(강조)
+                </div>
+              </div>
+
+              <!-- 우측: 네일 아트 팁 5개 밸런스 -->
+              <div class="beauty-visual-box">
+                <div class="visual-box-tag">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+                    <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+                  </svg>
+                  Nail Art 5-Tip Balance
+                </div>
+
+                <div class="nails-display-wrap">
+                  <div class="nail-finger">
+                    <div class="nail-tip nail-tip-1" title="엄지: 주조색"></div>
+                    <span class="nail-role-label">엄지</span>
+                  </div>
+                  <div class="nail-finger">
+                    <div class="nail-tip nail-tip-2" title="검지: 보조색"></div>
+                    <span class="nail-role-label">검지</span>
+                  </div>
+                  <div class="nail-finger">
+                    <div class="nail-tip nail-tip-3" title="중지: 주조색"></div>
+                    <span class="nail-role-label">중지</span>
+                  </div>
+                  <div class="nail-finger">
+                    <div class="nail-tip nail-tip-4" title="약지: 강조색 (풀코트/파츠)"></div>
+                    <span class="nail-role-label">약지★</span>
+                  </div>
+                  <div class="nail-finger">
+                    <div class="nail-tip nail-tip-5" title="소지: 보조색"></div>
+                    <span class="nail-role-label">소지</span>
+                  </div>
+                </div>
+
+                <div style="font-size: 0.74rem; color: var(--text-muted); margin-top: 24px; text-align: center;">
+                  약지(Ring Finger)에 5% 강조색을 포인트 배치한 네일 살롱 정석 배색
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- ============================================================
+               D 뷰: 듀얼 분할 모드 (도넛 + 무드보드)
+               ============================================================ -->
+          <div class="view-pane" id="view-split">
+            <div class="split-view-wrap">
+              
+              <!-- 좌측: 도넛 미니 -->
+              <div style="background: var(--bg-card); border-radius: var(--radius-lg); border: 1px solid var(--border-color); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px;">
+                <div style="width: 220px; height: 220px; position: relative;">
+                  <svg class="donut-svg" viewBox="0 0 200 200" style="width:100%; height:100%;">
+                    <circle cx="100" cy="100" r="75" stroke="rgba(255,255,255,0.05)" stroke-width="32" fill="none" />
+                    <circle id="splitDonutDom" class="donut-slice" cx="100" cy="100" r="75" stroke="var(--color-dominant)" />
+                    <circle id="splitDonutSub" class="donut-slice" cx="100" cy="100" r="75" stroke="var(--color-sub)" />
+                    <circle id="splitDonutAcc" class="donut-slice" cx="100" cy="100" r="75" stroke="var(--color-accent)" />
+                  </svg>
+                  <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: 'Montserrat'; font-weight: 700; font-size: 1.05rem;" id="splitFormula">
+                    70:25:5
+                  </div>
+                </div>
+                <div style="margin-top: 14px; font-size: 0.8rem; color: var(--text-secondary);">정량적 도넛 차트</div>
+              </div>
+
+              <!-- 우측: 무드보드 미니 -->
+              <div style="background-color: var(--color-dominant); border-radius: var(--radius-lg); border: 1px solid var(--border-color); position: relative; overflow: hidden; padding: 20px; display: flex; align-items: center; justify-content: center;">
+                <div id="splitSubBlock" style="background-color: var(--color-sub); width: 50%; height: 60%; border-radius: var(--radius-md); box-shadow: 0 10px 25px rgba(0,0,0,0.3); padding: 14px; color: #fff; font-size: 0.8rem; font-weight: 700; transition: all 0.3s ease;">
+                  SUB <span id="splitSubVal">25%</span>
+                </div>
+                <div id="splitAccBlock" style="position: absolute; right: 24px; top: 40px; background-color: var(--color-accent); width: 60px; height: 60px; border-radius: 50%; box-shadow: 0 8px 20px rgba(0,0,0,0.35); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 0.75rem; font-weight: 800; transition: all 0.3s ease;">
+                  <span id="splitAccVal">5%</span>
+                </div>
+                <div style="position: absolute; bottom: 12px; left: 16px; font-size: 0.72rem; background: rgba(0,0,0,0.5); padding: 2px 8px; border-radius: 4px; color: #fff;">
+                  공간적 면적 체감
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+
+      </section>
+
+    </main>
+
+    <!-- ====================================================================
+         하단 컨트롤러: 3색 면적비 연동 슬라이더 & 황금비율 프리셋
+         ==================================================================== -->
+    <section class="ratio-controller-section">
+      <div class="ratio-controller-header">
+        <div>
+          <h3 style="font-size: 1rem; font-weight: 700; display: flex; align-items: center; gap: 8px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="4" y1="21" x2="4" y2="14"/>
+              <line x1="4" y1="10" x2="4" y2="3"/>
+              <line x1="12" y1="21" x2="12" y2="12"/>
+              <line x1="12" y1="8" x2="12" y2="3"/>
+              <line x1="20" y1="21" x2="20" y2="16"/>
+              <line x1="20" y1="12" x2="20" y2="3"/>
+              <line x1="1" y1="14" x2="7" y2="14"/>
+              <line x1="9" y1="8" x2="15" y2="8"/>
+              <line x1="17" y1="16" x2="23" y2="16"/>
+            </svg>
+            면적비 조절 컨트롤러 (총합 100% 자동 연동)
+          </h3>
+          <p style="font-size: 0.76rem; color: var(--text-muted); margin-top: 2px;">
+            슬라이더를 움직이면 나머지 두 색상이 상대 비율에 맞춰 자동으로 보정됩니다. 특정 비율을 고정하려면 자물쇠 아이콘을 클릭하세요.
+          </p>
+        </div>
+
+        <!-- 황금비율 퀵 프리셋 칩 -->
+        <div class="ratio-preset-chips">
+          <span style="font-size: 0.74rem; color: var(--text-muted); margin-right: 4px;">추천 비율:</span>
+          <button class="chip-btn active" data-r-dom="70" data-r-sub="25" data-r-acc="5">70 : 25 : 5 (기본 황금비)</button>
+          <button class="chip-btn" data-r-dom="60" data-r-sub="30" data-r-acc="10">60 : 30 : 10 (균형 조화)</button>
+          <button class="chip-btn" data-r-dom="50" data-r-sub="35" data-r-acc="15">50 : 35 : 15 (트렌디 대비)</button>
+          <button class="chip-btn" data-r-dom="40" data-r-sub="40" data-r-acc="20">40 : 40 : 20 (볼드 아티스틱)</button>
+        </div>
+      </div>
+
+      <!-- 3구 슬라이더 행 -->
+      <div class="sliders-group">
+        
+        <!-- 1. 주조색 슬라이더 -->
+        <div class="slider-row">
+          <div class="slider-label-block">
+            <span class="slider-role-name">
+              <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--color-dominant);"></span>
+              주조색
+            </span>
+            <span class="slider-role-sub">배경/바탕 (권장 60~70%)</span>
+          </div>
+          <div class="range-slider-wrap">
+            <input type="range" class="custom-range" id="sliderDominant" min="1" max="98" value="70" style="--thumb-color: var(--color-dominant);" />
+          </div>
+          <div class="slider-value-display" id="valDisplayDominant">70%</div>
+          <button class="lock-toggle-btn" id="lockDominant" title="주조색 비율 고정">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- 2. 보조색 슬라이더 -->
+        <div class="slider-row">
+          <div class="slider-label-block">
+            <span class="slider-role-name">
+              <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--color-sub);"></span>
+              보조색
+            </span>
+            <span class="slider-role-sub">조화/음영 (권장 20~30%)</span>
+          </div>
+          <div class="range-slider-wrap">
+            <input type="range" class="custom-range" id="sliderSub" min="1" max="98" value="25" style="--thumb-color: var(--color-sub);" />
+          </div>
+          <div class="slider-value-display" id="valDisplaySub">25%</div>
+          <button class="lock-toggle-btn" id="lockSub" title="보조색 비율 고정">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- 3. 강조색 슬라이더 -->
+        <div class="slider-row">
+          <div class="slider-label-block">
+            <span class="slider-role-name">
+              <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--color-accent);"></span>
+              강조색
+            </span>
+            <span class="slider-role-sub">포인트 (권장 5~10%)</span>
+          </div>
+          <div class="range-slider-wrap">
+            <input type="range" class="custom-range" id="sliderAccent" min="1" max="98" value="5" style="--thumb-color: var(--color-accent);" />
+          </div>
+          <div class="slider-value-display" id="valDisplayAccent">5%</div>
+          <button class="lock-toggle-btn" id="lockAccent" title="강조색 비율 고정">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- 100% 통합 스택 프로그레스 바 -->
+      <div class="ratio-stacked-bar-wrap">
+        <div class="ratio-stacked-bar">
+          <div class="bar-segment bar-segment-dominant" id="barDom"></div>
+          <div class="bar-segment bar-segment-sub" id="barSub"></div>
+          <div class="bar-segment bar-segment-accent" id="barAcc"></div>
+        </div>
+        <div class="ratio-bar-legend">
+          <span id="legendBarDom">주조: 70%</span>
+          <span id="legendBarSub">보조: 25%</span>
+          <span id="legendBarAcc">강조: 5%</span>
+          <span style="color: var(--text-primary);">합계: 100%</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         하단 학습 카드: 색채학 분석 & 조화도 가이드
+         ==================================================================== -->
+    <section class="education-insight-card">
+      <div class="insight-text-group">
+        <h3>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+          </svg>
+          색채학 교수자 코멘터리 (면적비와 시각 심리)
+        </h3>
+        <p class="insight-desc" id="insightCommentary">
+          현재 설정된 <strong>70 : 25 : 5</strong> 비율은 뷰티 메이크업 및 토털 스타일링에서 가장 시각적 피로도가 적고 안정감을 주는 정석 황금비입니다. 주조색이 부드럽게 바탕을 받쳐주고, 보조색이 입체감을 부여하며, 단 5%의 강조색이 전체 룩의 엣지를 완성합니다.
+        </p>
+        <div class="insight-tags" id="insightTags">
+          <span class="insight-pill">안정적 밸런스</span>
+          <span class="insight-pill">내추럴 데일리 룩</span>
+          <span class="insight-pill">피로도 최소화 배색</span>
+        </div>
+      </div>
+
+      <!-- 색채 대비 및 특성 계측기 -->
+      <div class="contrast-meter-box">
+        <div class="meter-row">
+          <span class="meter-label">주조-강조 명도 대비 (Contrast)</span>
+          <span class="meter-val" id="meterContrastVal">높음 (High)</span>
+        </div>
+        <div class="meter-bar">
+          <div class="meter-fill" id="fillContrast" style="width: 78%;"></div>
+        </div>
+
+        <div class="meter-row" style="margin-top: 4px;">
+          <span class="meter-label">강조색 시선 집중도 (Visual Impact)</span>
+          <span class="meter-val" id="meterImpactVal">임팩트 극대화</span>
+        </div>
+        <div class="meter-bar">
+          <div class="meter-fill" id="fillImpact" style="width: 90%; background: #f87171;"></div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- 토스트 알림 컴포넌트 -->
+  <div class="toast-notice" id="toastNotice">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <polyline points="20 6 9 17 4 12"/>
+    </svg>
+    <span id="toastMsg">배색 정보가 클립보드에 복사되었습니다!</span>
+  </div>
+
+  <!-- ====================================================================
+       JavaScript 로직 (상태 관리, 100% 정규화 슬라이더, 차트 및 비주얼 동기화)
+       ==================================================================== -->
+  <script>
+    (function() {
+      'use strict';
+
+      /* ------------------------------------------------------------------
+         1. K-뷰티 감성 프리셋 데이터
+         ------------------------------------------------------------------ */
+      const PRESETS = [
+        {
+          name: "웜 뮤트 코랄",
+          tone: "Spring Light / Warm Mute",
+          desc: "화사하고 생기 있는 봄 웜톤 데일리 메이크업",
+          colors: { dominant: "#FAF2EB", sub: "#FFA07A", accent: "#E63946" },
+          ratio: { dominant: 70, sub: 25, accent: 5 }
+        },
+        {
+          name: "쿨 썸머 베리",
+          tone: "Summer Mute / Cool Lavender",
+          desc: "청초하고 차분한 소프트 쿨톤 로즈베리 룩",
+          colors: { dominant: "#F0EDF5", sub: "#C78BA1", accent: "#6A244D" },
+          ratio: { dominant: 70, sub: 25, accent: 5 }
+        },
+        {
+          name: "어텀 웜 우드",
+          tone: "Autumn Deep / Warm Brick",
+          desc: "그윽하고 고혹적인 가을 웜톤 시나몬 브라운",
+          colors: { dominant: "#EBE3D5", sub: "#A76D42", accent: "#4A1A12" },
+          ratio: { dominant: 70, sub: 25, accent: 5 }
+        },
+        {
+          name: "윈터 쿨 시크",
+          tone: "Winter Vivid / High Contrast",
+          desc: "도회적이고 선명한 겨울 쿨톤 마젠타 포인트",
+          colors: { dominant: "#F4F6F9", sub: "#2F3B4C", accent: "#D80064" },
+          ratio: { dominant: 60, sub: 30, accent: 10 }
+        },
+        {
+          name: "클린 누디 모던",
+          tone: "Neutral Modern / Minimalist",
+          desc: "세련된 청담 아틀리에 베이지 토프 에스프레소",
+          colors: { dominant: "#EAE5DF", sub: "#9C8D81", accent: "#1A1918" },
+          ratio: { dominant: 70, sub: 25, accent: 5 }
+        },
+        {
+          name: "Y2K 글리츠 팝",
+          tone: "Kitsch Pastel / Trendy Contrast",
+          desc: "통통 튀는 Z세대 페일 라일락 & 네온 라임",
+          colors: { dominant: "#E7F0FD", sub: "#D19DE8", accent: "#B2FF00" },
+          ratio: { dominant: 50, sub: 35, accent: 15 }
+        }
+      ];
+
+      /* ------------------------------------------------------------------
+         2. 애플리케이션 상태 (State)
+         ------------------------------------------------------------------ */
+      const state = {
+        colors: {
+          dominant: "#F6ECE3",
+          sub: "#E29578",
+          accent: "#B53838"
+        },
+        ratios: {
+          dominant: 70,
+          sub: 25,
+          accent: 5
+        },
+        locked: {
+          dominant: false,
+          sub: false,
+          accent: false
+        },
+        activeView: "view-moodboard",
+        theme: "dark"
+      };
+
+      /* ------------------------------------------------------------------
+         3. DOM 엘리먼트 캐싱
+         ------------------------------------------------------------------ */
+      const els = {
+        // Root & Glow
+        root: document.documentElement,
+        body: document.body,
+        glow1: document.getElementById("glow1"),
+        glow2: document.getElementById("glow2"),
+        glow3: document.getElementById("glow3"),
+        brandLogoIcon: document.getElementById("brandLogoIcon"),
+
+        // Pickers & Hex Inputs
+        pickerDom: document.getElementById("pickerDominant"),
+        pickerSub: document.getElementById("pickerSub"),
+        pickerAcc: document.getElementById("pickerAccent"),
+        previewDom: document.getElementById("previewDominant"),
+        previewSub: document.getElementById("previewSub"),
+        previewAcc: document.getElementById("previewAccent"),
+        hexDom: document.getElementById("hexDominant"),
+        hexSub: document.getElementById("hexSub"),
+        hexAcc: document.getElementById("hexAccent"),
+
+        // Badges
+        badgeRatioDom: document.getElementById("badgeRatioDominant"),
+        badgeRatioSub: document.getElementById("badgeRatioSub"),
+        badgeRatioAcc: document.getElementById("badgeRatioAccent"),
+
+        // Sliders & Displays
+        sliderDom: document.getElementById("sliderDominant"),
+        sliderSub: document.getElementById("sliderSub"),
+        sliderAcc: document.getElementById("sliderAccent"),
+        valDisplayDom: document.getElementById("valDisplayDominant"),
+        valDisplaySub: document.getElementById("valDisplaySub"),
+        valDisplayAcc: document.getElementById("valDisplayAccent"),
+        
+        // Locks
+        lockDom: document.getElementById("lockDominant"),
+        lockSub: document.getElementById("lockSub"),
+        lockAcc: document.getElementById("lockAccent"),
+
+        // Stacked Bar
+        barDom: document.getElementById("barDom"),
+        barSub: document.getElementById("barSub"),
+        barAcc: document.getElementById("barAcc"),
+        legendBarDom: document.getElementById("legendBarDom"),
+        legendBarSub: document.getElementById("legendBarSub"),
+        legendBarAcc: document.getElementById("legendBarAcc"),
+        headerRatioPreview: document.getElementById("headerRatioPreview"),
+
+        // Swaps & Actions
+        btnRotateRoles: document.getElementById("btnRotateRoles"),
+        btnSwapDomSub: document.getElementById("btnSwapDomSub"),
+        btnSwapDomAcc: document.getElementById("btnSwapDomAcc"),
+        btnResetGolden: document.getElementById("btnResetGolden"),
+        btnExportReport: document.getElementById("btnExportReport"),
+        btnThemeToggle: document.getElementById("btnThemeToggle"),
+        themeIcon: document.getElementById("themeIcon"),
+        presetsGrid: document.getElementById("presetsGrid"),
+
+        // Tabs & Views
+        tabs: document.querySelectorAll(".tab-btn"),
+        viewPanes: document.querySelectorAll(".view-pane"),
+
+        // Donut Chart Elements
+        donutSectorDom: document.getElementById("donutSectorDominant"),
+        donutSectorSub: document.getElementById("donutSectorSub"),
+        donutSectorAcc: document.getElementById("donutSectorAccent"),
+        centerFormula: document.getElementById("centerFormula"),
+        centerConcept: document.getElementById("centerConcept"),
+        legendPctDom: document.getElementById("legendPctDominant"),
+        legendPctSub: document.getElementById("legendPctSub"),
+        legendPctAcc: document.getElementById("legendPctAccent"),
+
+        // Moodboard Elements
+        moodboardStage: document.getElementById("moodboardStage"),
+        mbDominantPct: document.getElementById("mbDominantPct"),
+        mbSubBlock: document.getElementById("mbSubBlock"),
+        mbSubTitle: document.getElementById("mbSubTitle"),
+        mbAccentElement: document.getElementById("mbAccentElement"),
+        mbAccentValue: document.getElementById("mbAccentValue"),
+        mbStripe: document.getElementById("mbStripe"),
+
+        // Split View Elements
+        splitDonutDom: document.getElementById("splitDonutDom"),
+        splitDonutSub: document.getElementById("splitDonutSub"),
+        splitDonutAcc: document.getElementById("splitDonutAcc"),
+        splitFormula: document.getElementById("splitFormula"),
+        splitSubBlock: document.getElementById("splitSubBlock"),
+        splitAccBlock: document.getElementById("splitAccBlock"),
+        splitSubVal: document.getElementById("splitSubVal"),
+        splitAccVal: document.getElementById("splitAccVal"),
+
+        // Commentary & Meters
+        insightCommentary: document.getElementById("insightCommentary"),
+        insightTags: document.getElementById("insightTags"),
+        meterContrastVal: document.getElementById("meterContrastVal"),
+        meterImpactVal: document.getElementById("meterImpactVal"),
+        fillContrast: document.getElementById("fillContrast"),
+        fillImpact: document.getElementById("fillImpact"),
+
+        // Toast
+        toastNotice: document.getElementById("toastNotice"),
+        toastMsg: document.getElementById("toastMsg")
+      };
+
+      /* ------------------------------------------------------------------
+         4. 유틸리티 함수 (컬러 계산 및 변환)
+         ------------------------------------------------------------------ */
+      function hexToRgb(hex) {
+        let c = hex.replace('#', '');
+        if (c.length === 3) c = c.split('').map(x => x + x).join('');
+        const num = parseInt(c, 16);
+        return {
+          r: (num >> 16) & 255,
+          g: (num >> 8) & 255,
+          b: num & 255
+        };
+      }
+
+      function rgbToHex(r, g, b) {
+        return "#" + [r, g, b].map(x => {
+          const hex = Math.round(x).toString(16);
+          return hex.length === 1 ? '0' + hex : hex;
+        }).join('').toUpperCase();
+      }
+
+      // 상대 휘도 (Relative Luminance 계산)
+      function getLuminance(hex) {
+        const { r, g, b } = hexToRgb(hex);
+        const a = [r, g, b].map(v => {
+          v /= 255;
+          return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+        });
+        return a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722;
+      }
+
+      // 대비율 계산 (Contrast Ratio 1:1 ~ 21:1)
+      function getContrastRatio(hex1, hex2) {
+        const l1 = getLuminance(hex1) + 0.05;
+        const l2 = getLuminance(hex2) + 0.05;
+        return l1 > l2 ? l1 / l2 : l2 / l1;
+      }
+
+      /* ------------------------------------------------------------------
+         5. 핵심 알고리즘: 슬라이더 조작 시 100% 비례 배분 로직
+         ------------------------------------------------------------------ */
+      function updateRatioBySlider(changedKey, rawNewValue) {
+        let newVal = parseInt(rawNewValue, 10);
+        if (isNaN(newVal)) newVal = 1;
+        newVal = Math.max(1, Math.min(98, newVal));
+
+        const keys = ['dominant', 'sub', 'accent'];
+        const otherKeys = keys.filter(k => k !== changedKey);
+
+        const lockedOthers = otherKeys.filter(k => state.locked[k]);
+
+        if (lockedOthers.length === 2) {
+          // 나머지 둘 다 잠겨있으면 변경 불가
+          renderUI();
+          showToast("다른 두 색상 비율이 모두 고정(Lock)되어 있어 변경할 수 없습니다.");
+          return;
+        }
+
+        if (lockedOthers.length === 1) {
+          // 하나만 잠겨있을 때: 남은 하나가 잔여분을 모두 수용
+          const fixedKey = lockedOthers[0];
+          const flexibleKey = otherKeys.find(k => k !== fixedKey);
+          const fixedVal = state.ratios[fixedKey];
+
+          // newVal의 최대 상한 클램프
+          const maxAllowed = 100 - fixedVal - 1;
+          if (newVal > maxAllowed) newVal = maxAllowed;
+          if (newVal < 1) newVal = 1;
+
+          state.ratios[changedKey] = newVal;
+          state.ratios[flexibleKey] = 100 - fixedVal - newVal;
+        } else {
+          // 둘 다 자유로운 상태: 기존 비율을 유지하며 비례 배분
+          const remaining = 100 - newVal;
+          const k1 = otherKeys[0];
+          const k2 = otherKeys[1];
+          const currentSum = state.ratios[k1] + state.ratios[k2];
+
+          let v1, v2;
+          if (currentSum === 0) {
+            v1 = Math.floor(remaining / 2);
+            v2 = remaining - v1;
+          } else {
+            const p1 = state.ratios[k1] / currentSum;
+            v1 = Math.round(remaining * p1);
+            if (v1 < 1) v1 = 1;
+            if (v1 > remaining - 1) v1 = remaining - 1;
+            v2 = remaining - v1;
+          }
+
+          state.ratios[changedKey] = newVal;
+          state.ratios[k1] = v1;
+          state.ratios[k2] = v2;
+        }
+
+        renderUI();
+      }
+
+      /* ------------------------------------------------------------------
+         6. 색상 및 비율 동기화 렌더러
+         ------------------------------------------------------------------ */
+      function renderUI() {
+        const { dominant: rDom, sub: rSub, accent: rAcc } = state.ratios;
+        const { dominant: cDom, sub: cSub, accent: cAcc } = state.colors;
+
+        // 6.1 CSS 변수 업데이트
+        els.root.style.setProperty('--color-dominant', cDom);
+        els.root.style.setProperty('--color-sub', cSub);
+        els.root.style.setProperty('--color-accent', cAcc);
+
+        els.root.style.setProperty('--ratio-dominant', rDom);
+        els.root.style.setProperty('--ratio-sub', rSub);
+        els.root.style.setProperty('--ratio-accent', rAcc);
+
+        // 6.2 배경 앰비언트 글로우 & 로고
+        els.glow1.style.background = cDom;
+        els.glow2.style.background = cSub;
+        els.glow3.style.background = cAcc;
+        els.brandLogoIcon.style.background = `linear-gradient(135deg, ${cDom}, ${cSub}, ${cAcc})`;
+
+        // 6.3 입력 필드 & 슬롯 카드 동기화
+        els.pickerDom.value = cDom;
+        els.pickerSub.value = cSub;
+        els.pickerAcc.value = cAcc;
+
+        els.previewDom.style.backgroundColor = cDom;
+        els.previewSub.style.backgroundColor = cSub;
+        els.previewAcc.style.backgroundColor = cAcc;
+
+        els.hexDom.value = cDom.toUpperCase();
+        els.hexSub.value = cSub.toUpperCase();
+        els.hexAcc.value = cAcc.toUpperCase();
+
+        els.badgeRatioDom.textContent = `${rDom}%`;
+        els.badgeRatioSub.textContent = `${rSub}%`;
+        els.badgeRatioAcc.textContent = `${rAcc}%`;
+
+        // 6.4 슬라이더 동기화
+        els.sliderDom.value = rDom;
+        els.sliderSub.value = rSub;
+        els.sliderAcc.value = rAcc;
+
+        els.valDisplayDom.textContent = `${rDom}%`;
+        els.valDisplaySub.textContent = `${rSub}%`;
+        els.valDisplayAcc.textContent = `${rAcc}%`;
+
+        // 6.5 스택 프로그레스 바 동기화
+        els.barDom.style.width = `${rDom}%`;
+        els.barSub.style.width = `${rSub}%`;
+        els.barAcc.style.width = `${rAcc}%`;
+        els.legendBarDom.textContent = `주조: ${rDom}%`;
+        els.legendBarSub.textContent = `보조: ${rSub}%`;
+        els.legendBarAcc.textContent = `강조: ${rAcc}%`;
+
+        const ratioString = `${rDom} : ${rSub} : ${rAcc}`;
+        els.headerRatioPreview.textContent = ratioString;
+
+        // 6.6 A 뷰: SVG 도넛 차트 세그먼트 (둘레 2 * PI * 75 = 471.238898)
+        const C = 2 * Math.PI * 75; // 471.239
+        const arcDom = (rDom / 100) * C;
+        const arcSub = (rSub / 100) * C;
+        const arcAcc = (rAcc / 100) * C;
+
+        // 도넛 세그먼트 업데이트
+        els.donutSectorDom.style.strokeDasharray = `${arcDom} ${C}`;
+        els.donutSectorDom.style.strokeDashoffset = `0`;
+
+        els.donutSectorSub.style.strokeDasharray = `${arcSub} ${C}`;
+        els.donutSectorSub.style.strokeDashoffset = `-${arcDom}`;
+
+        els.donutSectorAcc.style.strokeDasharray = `${arcAcc} ${C}`;
+        els.donutSectorAcc.style.strokeDashoffset = `-${arcDom + arcSub}`;
+
+        // 도넛 중앙 요약
+        els.centerFormula.textContent = ratioString;
+        els.legendPctDom.textContent = `${rDom}%`;
+        els.legendPctSub.textContent = `${rSub}%`;
+        els.legendPctAcc.textContent = `${rAcc}%`;
+
+        // 6.7 B 뷰: 무드보드 추상화 블록 리사이징 애니메이션
+        // 주조색은 stage 배경 전체
+        els.mbDominantPct.textContent = `${rDom}%`;
+
+        // 보조색 블록: rSub에 따라 너비/높이 가변 (30% ~ 70%)
+        const subW = Math.min(68, Math.max(26, rSub * 1.5));
+        const subH = Math.min(85, Math.max(35, rSub * 2.1));
+        els.mbSubBlock.style.width = `${subW}%`;
+        els.mbSubBlock.style.height = `${subH}%`;
+        els.mbSubTitle.textContent = `Secondary Mood ${rSub}%`;
+
+        // 강조색 포인트 오브젝트: rAcc에 따라 지름 가변 (70px ~ 200px)
+        const accDim = Math.min(220, Math.max(76, 60 + rAcc * 6));
+        els.mbAccentElement.style.width = `${accDim}px`;
+        els.mbAccentElement.style.height = `${accDim}px`;
+        els.mbAccentValue.textContent = `${rAcc}%`;
+
+        // 포인트 스트라이프
+        els.mbStripe.style.width = `${Math.min(60, Math.max(12, rAcc * 3))}%`;
+
+        // 6.8 D 뷰: Split 모드 동기화
+        els.splitDonutDom.style.strokeDasharray = `${arcDom} ${C}`;
+        els.splitDonutDom.style.strokeDashoffset = `0`;
+        els.splitDonutSub.style.strokeDasharray = `${arcSub} ${C}`;
+        els.splitDonutSub.style.strokeDashoffset = `-${arcDom}`;
+        els.splitDonutAcc.style.strokeDasharray = `${arcAcc} ${C}`;
+        els.splitDonutAcc.style.strokeDashoffset = `-${arcDom + arcSub}`;
+        els.splitFormula.textContent = ratioString;
+
+        els.splitSubBlock.style.width = `${Math.min(65, Math.max(25, rSub * 1.6))}%`;
+        els.splitSubVal.textContent = `${rSub}%`;
+        const splitAccDim = Math.min(90, Math.max(45, 35 + rAcc * 3));
+        els.splitAccBlock.style.width = `${splitAccDim}px`;
+        els.splitAccBlock.style.height = `${splitAccDim}px`;
+        els.splitAccVal.textContent = `${rAcc}%`;
+
+        // 6.9 색채학 교육 코멘터리 & 측정기 자동 업데이트
+        updateColorTheoryInsight();
+      }
+
+      /* ------------------------------------------------------------------
+         7. 색채학 분석 및 교육 코멘터리 자동 생성
+         ------------------------------------------------------------------ */
+      function updateColorTheoryInsight() {
+        const { dominant: rDom, sub: rSub, accent: rAcc } = state.ratios;
+        const { dominant: cDom, sub: cSub, accent: cAcc } = state.colors;
+
+        const contrastDomAcc = getContrastRatio(cDom, cAcc);
+        const contrastDomSub = getContrastRatio(cDom, cSub);
+
+        let conceptName = "클래식 뷰티";
+        let commentary = "";
+        let tags = [];
+
+        if (rDom >= 68 && rSub <= 27 && rAcc <= 7) {
+          conceptName = "정석 황금비율";
+          commentary = `현재 설정된 <strong>${rDom} : ${rSub} : ${rAcc}</strong> 비율은 뷰티 배색의 정석입니다. 주조색(${rDom}%)이 넓게 베이스 캔버스를 포용하여 시각적 안정감을 극대화하며, 단 ${rAcc}%의 강조색만으로도 립이나 아이라인 포인트가 선명하게 살아납니다.`;
+          tags = ["시각적 안정감 최상", "데일리 내추럴 룩", "피로도 최소화"];
+        } else if (rDom >= 55 && rSub >= 28) {
+          conceptName = "부드러운 블렌딩";
+          commentary = `보조색 비율이 ${rSub}%로 확대되어 주조색과 보조색 간의 풍부한 그러데이션과 입체 음영이 돋보입니다. 음영 메이크업이나 톤온톤 네일 아트에 이상적인 배색 구조입니다.`;
+          tags = ["소프트 음영 조화", "톤온톤 믹스매치", "치크 쉐이딩 강조"];
+        } else if (rAcc >= 15) {
+          conceptName = "볼드 아방가르드";
+          commentary = `강조색 비율이 ${rAcc}%로 매우 높아져 시선을 강하게 사로잡는 파격적인 뷰티 무드를 형성합니다. 런웨이 패션쇼, 화보(Editorial) 촬영 또는 파티 글램 룩에 적합한 개성 배색입니다.`;
+          tags = ["강렬한 시선 집중", "화보/런웨이 메이크업", "하이 임팩트"];
+        } else {
+          conceptName = "모던 밸런스";
+          commentary = `주조색(${rDom}%), 보조색(${rSub}%), 강조색(${rAcc}%)이 균형을 이루며 감각적인 모던 룩을 완성합니다. 색상 간의 명도 대비를 고려하여 립이나 블러셔의 경계를 부드럽게 블러링하는 것을 추천합니다.`;
+          tags = ["세련된 트렌드 룩", "모던 콘트라스트", "감각적 조화"];
+        }
+
+        els.centerConcept.textContent = conceptName;
+        els.insightCommentary.innerHTML = commentary;
+
+        // 태그 렌더링
+        els.insightTags.innerHTML = tags.map(t => `<span class="insight-pill">${t}</span>`).join('');
+
+        // 명도 대비율 표시
+        const contrastScore = Math.min(100, Math.round((contrastDomAcc / 10) * 100));
+        els.fillContrast.style.width = `${contrastScore}%`;
+        if (contrastDomAcc >= 4.5) {
+          els.meterContrastVal.textContent = `매우 높음 (${contrastDomAcc.toFixed(1)}:1)`;
+          els.fillContrast.style.background = "#34d399";
+        } else if (contrastDomAcc >= 3.0) {
+          els.meterContrastVal.textContent = `적정 조화 (${contrastDomAcc.toFixed(1)}:1)`;
+          els.fillContrast.style.background = "#fbbf24";
+        } else {
+          els.meterContrastVal.textContent = `소프트 무드 (${contrastDomAcc.toFixed(1)}:1)`;
+          els.fillContrast.style.background = "#f87171";
+        }
+
+        // 시선 집중도 계측 (강조색 비율과 대비의 복합치)
+        const impactScore = Math.min(100, Math.round((rAcc * 4) + (contrastDomAcc * 4)));
+        els.fillImpact.style.width = `${impactScore}%`;
+        if (impactScore > 75) {
+          els.meterImpactVal.textContent = "임팩트 극대화 (High Focus)";
+        } else if (impactScore > 45) {
+          els.meterImpactVal.textContent = "자연스러운 포인트 (Moderate)";
+        } else {
+          els.meterImpactVal.textContent = "은은한 뉘앙스 (Subtle)";
+        }
+      }
+
+      /* ------------------------------------------------------------------
+         8. 프리셋 렌더링 & 클릭 핸들러
+         ------------------------------------------------------------------ */
+      function renderPresets() {
+        els.presetsGrid.innerHTML = "";
+        PRESETS.forEach((preset, idx) => {
+          const card = document.createElement("div");
+          card.className = "preset-card";
+          card.title = `${preset.name} (${preset.tone}) - ${preset.desc}`;
+          
+          card.innerHTML = `
+            <div class="preset-swatches">
+              <div class="preset-swatch-slice" style="width: 55%; background-color: ${preset.colors.dominant};"></div>
+              <div class="preset-swatch-slice" style="width: 30%; background-color: ${preset.colors.sub};"></div>
+              <div class="preset-swatch-slice" style="width: 15%; background-color: ${preset.colors.accent};"></div>
+            </div>
+            <div class="preset-info">
+              <div class="preset-name">${preset.name}</div>
+              <div class="preset-tone">${preset.tone}</div>
+            </div>
+          `;
+
+          card.addEventListener("click", () => {
+            state.colors.dominant = preset.colors.dominant;
+            state.colors.sub = preset.colors.sub;
+            state.colors.accent = preset.colors.accent;
+
+            state.ratios.dominant = preset.ratio.dominant;
+            state.ratios.sub = preset.ratio.sub;
+            state.ratios.accent = preset.ratio.accent;
+
+            // 프리셋 버튼 활성화 갱신
+            document.querySelectorAll(".chip-btn").forEach(chip => chip.classList.remove("active"));
+            renderUI();
+            showToast(`"${preset.name}" 뷰티 프리셋이 적용되었습니다.`);
+          });
+
+          els.presetsGrid.appendChild(card);
+        });
+      }
+
+      /* ------------------------------------------------------------------
+         9. 역할 스왑 (Role Swap) 인터랙션
+         ------------------------------------------------------------------ */
+      // 9.1 3색 순환 교체 (Rotate Roles): 주조 -> 보조 -> 강조 -> 주조
+      function rotateRoles() {
+        const oldDom = state.colors.dominant;
+        const oldSub = state.colors.sub;
+        const oldAcc = state.colors.accent;
+
+        state.colors.dominant = oldSub;
+        state.colors.sub = oldAcc;
+        state.colors.accent = oldDom;
+
+        renderUI();
+        showToast("색상 역할이 1칸씩 순환 회전되었습니다. 주조색이 바뀌며 전체 분위기가 달라집니다!");
+      }
+
+      // 9.2 주조 ⇄ 보조 교환
+      function swapDomSub() {
+        const temp = state.colors.dominant;
+        state.colors.dominant = state.colors.sub;
+        state.colors.sub = temp;
+        renderUI();
+        showToast("주조색과 보조색이 서로 맞교환되었습니다.");
+      }
+
+      // 9.3 주조 ⇄ 강조 교환
+      function swapDomAcc() {
+        const temp = state.colors.dominant;
+        state.colors.dominant = state.colors.accent;
+        state.colors.accent = temp;
+        renderUI();
+        showToast("주조색과 강조색이 서로 맞교환되었습니다. 콘셉트의 극적인 반전을 확인해보세요!");
+      }
+
+      /* ------------------------------------------------------------------
+         10. 배색 리포트 복사 & 토스트 알림
+         ------------------------------------------------------------------ */
+      function exportReport() {
+        const report = `[K-뷰티 컬러 면적비 설계 리포트]
+- 주조색 (Dominant): ${state.colors.dominant.toUpperCase()} (${state.ratios.dominant}%) - 베이스 & 배경
+- 보조색 (Secondary): ${state.colors.sub.toUpperCase()} (${state.ratios.sub}%) - 조화 & 음영
+- 강조색 (Accent): ${state.colors.accent.toUpperCase()} (${state.ratios.accent}%) - 포인트 & 시선집중
+- 배색 콘셉트: ${els.centerConcept.textContent} (${state.ratios.dominant}:${state.ratios.sub}:${state.ratios.accent})
+- 명도 대비율: ${els.meterContrastVal.textContent}
+생성 도구: 뷰티 컬러 밸런스 시뮬레이터 (6주차/13주차 색채학 실습)`;
+
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(report).then(() => {
+            showToast("배색 리포트가 클립보드에 복사되었습니다! 과제 또는 포트폴리오에 붙여넣으세요.");
+          }).catch(() => {
+            fallbackCopy(report);
+          });
+        } else {
+          fallbackCopy(report);
+        }
+      }
+
+      function fallbackCopy(text) {
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        ta.style.position = "fixed";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.select();
+        try {
+          document.execCommand('copy');
+          showToast("배색 정보가 클립보드에 복사되었습니다!");
+        } catch (err) {
+          alert(text);
+        }
+        document.body.removeChild(ta);
+      }
+
+      let toastTimeout = null;
+      function showToast(msg) {
+        els.toastMsg.textContent = msg;
+        els.toastNotice.classList.add("show");
+        if (toastTimeout) clearTimeout(toastTimeout);
+        toastTimeout = setTimeout(() => {
+          els.toastNotice.classList.remove("show");
+        }, 3200);
+      }
+
+      /* ------------------------------------------------------------------
+         11. 테마 토글 (Dark / Light 모드)
+         ------------------------------------------------------------------ */
+      function toggleTheme() {
+        state.theme = state.theme === "dark" ? "light" : "dark";
+        els.body.setAttribute("data-theme", state.theme);
+        
+        // 아이콘 교체
+        if (state.theme === "light") {
+          els.themeIcon.innerHTML = `
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          `;
+        } else {
+          els.themeIcon.innerHTML = `
+            <circle cx="12" cy="12" r="5"/>
+            <line x1="12" y1="1" x2="12" y2="3"/>
+            <line x1="12" y1="21" x2="12" y2="23"/>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+            <line x1="1" y1="12" x2="3" y2="12"/>
+            <line x1="21" y1="12" x2="23" y2="12"/>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+          `;
+        }
+      }
+
+      /* ------------------------------------------------------------------
+         12. 이벤트 리스너 등록 & 초기화
+         ------------------------------------------------------------------ */
+      function initEventListeners() {
+        // 컬러 피커 변경 이벤트
+        els.pickerDom.addEventListener("input", (e) => {
+          state.colors.dominant = e.target.value;
+          renderUI();
+        });
+        els.pickerSub.addEventListener("input", (e) => {
+          state.colors.sub = e.target.value;
+          renderUI();
+        });
+        els.pickerAcc.addEventListener("input", (e) => {
+          state.colors.accent = e.target.value;
+          renderUI();
+        });
+
+        // HEX 텍스트 직접 입력 이벤트
+        function handleHexInput(inputEl, roleKey) {
+          inputEl.addEventListener("change", (e) => {
+            let val = e.target.value.trim();
+            if (!val.startsWith('#')) val = '#' + val;
+            if (/^#[0-9A-Fa-f]{6}$/.test(val)) {
+              state.colors[roleKey] = val;
+              renderUI();
+            } else {
+              inputEl.value = state.colors[roleKey].toUpperCase();
+              showToast("올바른 6자리 HEX 컬러 코드(#RRGGBB)를 입력해주세요.");
+            }
+          });
+        }
+        handleHexInput(els.hexDom, 'dominant');
+        handleHexInput(els.hexSub, 'sub');
+        handleHexInput(els.hexAcc, 'accent');
+
+        // 슬라이더 변경 이벤트
+        els.sliderDom.addEventListener("input", (e) => updateRatioBySlider('dominant', e.target.value));
+        els.sliderSub.addEventListener("input", (e) => updateRatioBySlider('sub', e.target.value));
+        els.sliderAcc.addEventListener("input", (e) => updateRatioBySlider('accent', e.target.value));
+
+        // 자물쇠(Lock) 토글 이벤트
+        function bindLock(btn, key) {
+          btn.addEventListener("click", () => {
+            state.locked[key] = !state.locked[key];
+            btn.classList.toggle("locked", state.locked[key]);
+            const krName = key === 'dominant' ? '주조색' : key === 'sub' ? '보조색' : '강조색';
+            showToast(`${krName} 비율 고정이 ${state.locked[key] ? '활성화' : '해제'}되었습니다.`);
+          });
+        }
+        bindLock(els.lockDom, 'dominant');
+        bindLock(els.lockSub, 'sub');
+        bindLock(els.lockAcc, 'accent');
+
+        // 추천 비율 칩 버튼 클릭
+        document.querySelectorAll(".chip-btn").forEach(btn => {
+          btn.addEventListener("click", () => {
+            document.querySelectorAll(".chip-btn").forEach(c => c.classList.remove("active"));
+            btn.classList.add("active");
+
+            state.ratios.dominant = parseInt(btn.dataset.rDom, 10);
+            state.ratios.sub = parseInt(btn.dataset.rSub, 10);
+            state.ratios.accent = parseInt(btn.dataset.rAcc, 10);
+
+            // 락 해제
+            state.locked.dominant = false;
+            state.locked.sub = false;
+            state.locked.accent = false;
+            els.lockDom.classList.remove("locked");
+            els.lockSub.classList.remove("locked");
+            els.lockAcc.classList.remove("locked");
+
+            renderUI();
+            showToast(`${state.ratios.dominant} : ${state.ratios.sub} : ${state.ratios.accent} 비율로 변경되었습니다.`);
+          });
+        });
+
+        // 뷰 탭 전환
+        els.tabs.forEach(tab => {
+          tab.addEventListener("click", () => {
+            els.tabs.forEach(t => t.classList.remove("active"));
+            tab.classList.add("active");
+
+            const targetId = tab.dataset.target;
+            els.viewPanes.forEach(pane => {
+              pane.classList.remove("active");
+              if (pane.id === targetId) {
+                pane.classList.add("active");
+              }
+            });
+          });
+        });
+
+        // 역할 스왑 버튼
+        els.btnRotateRoles.addEventListener("click", rotateRoles);
+        els.btnSwapDomSub.addEventListener("click", swapDomSub);
+        els.btnSwapDomAcc.addEventListener("click", swapDomAcc);
+
+        // 리셋 및 유틸 버튼
+        els.btnResetGolden.addEventListener("click", () => {
+          state.ratios.dominant = 70;
+          state.ratios.sub = 25;
+          state.ratios.accent = 5;
+          state.locked = { dominant: false, sub: false, accent: false };
+          els.lockDom.classList.remove("locked");
+          els.lockSub.classList.remove("locked");
+          els.lockAcc.classList.remove("locked");
+
+          document.querySelectorAll(".chip-btn").forEach(c => c.classList.remove("active"));
+          const firstChip = document.querySelector(".chip-btn[data-r-dom='70']");
+          if (firstChip) firstChip.classList.add("active");
+
+          renderUI();
+          showToast("뷰티 배색의 기본인 70 : 25 : 5 황금비로 초기화되었습니다.");
+        });
+
+        els.btnExportReport.addEventListener("click", exportReport);
+        els.btnThemeToggle.addEventListener("click", toggleTheme);
+      }
+
+      /* ------------------------------------------------------------------
+         13. 앱 부트스트랩 (Init)
+         ------------------------------------------------------------------ */
+      renderPresets();
+      initEventListeners();
+      renderUI();
+
+    })();
+  </script>
+</body>
+</html>
