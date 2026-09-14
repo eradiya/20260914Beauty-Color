@@ -3,2749 +3,2415 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>뷰티 컬러 밸런스: 주조·보조·강조색 면적비 시뮬레이터</title>
-  <meta name="description" content="뷰티미용전공 색채학 6주차·13주차 실습을 위한 주조색(70%), 보조색(25%), 강조색(5%) 면적비 설계 및 역할 분석 인터랙티브 시뮬레이터" />
+  <title>Art Mask Design Brief: 나의 첫 경진대회 시안 기획</title>
+  <meta name="description" content="K-뷰티 뷰티미용전공 학생들을 위한 아트마스크 경진대회 발상 및 디자인 기획 실시간 시뮬레이터" />
 
-  <!-- Google Web Fonts (Pretendard 대체 및 모던 고딕/세리프) -->
+  <!-- Google Fonts: Outfit & Cormorant Garamond & Noto Sans KR -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Noto+Sans+KR:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,600&family=Noto+Sans+KR:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- html2canvas for High-Resolution Board Export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
   <style>
-    /* ==========================================================================
-       1. CSS 변수 및 디자인 토큰 (K-Beauty Luxury & Editorial Dark/Light)
-       ========================================================================== */
+    /* =========================================================
+       1. CSS DESIGN SYSTEM & TOKENS
+       ========================================================= */
     :root {
-      /* 다크 에스테틱 테마 (기본) */
-      --bg-main: #0c0d10;
-      --bg-panel: rgba(22, 24, 29, 0.85);
-      --bg-panel-solid: #15171d;
-      --bg-card: rgba(30, 33, 41, 0.7);
-      --bg-card-hover: rgba(40, 44, 55, 0.85);
-      --bg-input: #1b1e26;
-      --border-color: rgba(255, 255, 255, 0.08);
-      --border-color-focus: rgba(255, 255, 255, 0.25);
-      
-      --text-primary: #f5f6f9;
-      --text-secondary: #9aa0ae;
-      --text-muted: #646b7a;
-      
-      --accent-brand: #e8a598; /* 은은한 럭셔리 로즈골드 톤 */
-      --accent-brand-glow: rgba(232, 165, 152, 0.25);
-      
+      /* Base Theme Colors */
+      --bg-dark: #0d0f14;
+      --bg-surface: #141721;
+      --bg-card: rgba(26, 30, 42, 0.78);
+      --bg-glass: rgba(255, 255, 255, 0.04);
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-accent: rgba(226, 175, 127, 0.4);
+
+      /* Typography & Accents */
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --text-dim: #6b7280;
+      --gold-primary: #e2af7f;
+      --gold-glow: rgba(226, 175, 127, 0.25);
+      --rose-accent: #f472b6;
+      --indigo-accent: #818cf8;
+
+      /* User Dynamic Palette (Default: Bloom theme) */
+      --color-dominant: #f7d6d0; /* 주조색: 60% */
+      --color-sub: #b23a48;      /* 보조색: 30% */
+      --color-accent: #f9d024;   /* 강조색: 10% */
+
+      /* Shadows & Radii */
       --radius-sm: 8px;
       --radius-md: 14px;
       --radius-lg: 20px;
-      --radius-full: 9999px;
-      
-      --shadow-subtle: 0 4px 20px rgba(0, 0, 0, 0.35);
-      --shadow-card: 0 10px 30px rgba(0, 0, 0, 0.45);
-      --glass-blur: blur(16px);
-      
-      /* 동적 컬러 변수 (JS에서 실시간 업데이트) */
-      --color-dominant: #F6ECE3; /* 주조색: 밀키 누드 웜베이지 */
-      --color-sub: #E29578;      /* 보조색: 소프트 테라코타 코랄 */
-      --color-accent: #B53838;   /* 강조색: 딥 칠리 레드 */
-      
-      /* 비율 변수 (퍼센트) */
-      --ratio-dominant: 70;
-      --ratio-sub: 25;
-      --ratio-accent: 5;
+      --shadow-card: 0 12px 35px -8px rgba(0, 0, 0, 0.55), 0 0 1px 1px rgba(255, 255, 255, 0.05);
+      --shadow-glow: 0 0 25px rgba(226, 175, 127, 0.18);
     }
 
-    [data-theme="light"] {
-      --bg-main: #f7f6f4;
-      --bg-panel: rgba(255, 255, 255, 0.88);
-      --bg-panel-solid: #ffffff;
-      --bg-card: rgba(243, 241, 237, 0.8);
-      --bg-card-hover: rgba(235, 232, 226, 0.95);
-      --bg-input: #ffffff;
-      --border-color: rgba(0, 0, 0, 0.08);
-      --border-color-focus: rgba(0, 0, 0, 0.2);
-      
-      --text-primary: #18191c;
-      --text-secondary: #5e6472;
-      --text-muted: #8e95a5;
-      
-      --accent-brand: #c46855;
-      --accent-brand-glow: rgba(196, 104, 85, 0.18);
-      
-      --shadow-subtle: 0 4px 20px rgba(0, 0, 0, 0.06);
-      --shadow-card: 0 12px 32px rgba(0, 0, 0, 0.08);
-    }
-
-    /* Reset & Base */
-    *, *::before, *::after {
+    * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
+      -webkit-tap-highlight-color: transparent;
     }
 
-    html, body {
-      width: 100%;
-      min-height: 100%;
-      background-color: var(--bg-main);
-      color: var(--text-primary);
-      font-family: 'Noto Sans KR', 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      line-height: 1.5;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      overflow-x: hidden;
-      transition: background-color 0.3s ease, color 0.3s ease;
-    }
-
-    /* Background Ambient Glows */
-    .ambient-glow {
-      position: fixed;
-      width: 600px;
-      height: 600px;
-      border-radius: 50%;
-      filter: blur(140px);
-      pointer-events: none;
-      z-index: 0;
-      opacity: 0.18;
-      transition: all 0.8s ease;
-    }
-    .glow-1 {
-      top: -150px;
-      left: -100px;
-      background: var(--color-dominant);
-    }
-    .glow-2 {
-      bottom: -150px;
-      right: -100px;
-      background: var(--color-sub);
-    }
-    .glow-3 {
-      top: 40%;
-      left: 45%;
-      width: 400px;
-      height: 400px;
-      background: var(--color-accent);
-      opacity: 0.12;
-    }
-
-    /* App Container */
-    .app-layout {
-      position: relative;
-      z-index: 1;
-      max-width: 1680px;
-      margin: 0 auto;
+    body {
+      font-family: 'Outfit', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      line-height: 1.6;
       min-height: 100vh;
+      background-image: 
+        radial-gradient(circle at 15% 10%, rgba(226, 175, 127, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 85% 65%, rgba(129, 140, 248, 0.06) 0%, transparent 45%),
+        linear-gradient(180deg, #0d0f14 0%, #11131a 100%);
+      background-attachment: fixed;
+      overflow-x: hidden;
+    }
+
+    /* Scrollbar Styling */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--bg-dark);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--gold-primary);
+    }
+
+    /* =========================================================
+       2. TOP BAR & HERO HEADER
+       ========================================================= */
+    header.hero-header {
+      position: relative;
+      padding: 24px 32px 18px;
+      background: rgba(13, 15, 20, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border-subtle);
+      z-index: 50;
+    }
+
+    .header-container {
+      max-width: 1560px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .brand-wrap {
       display: flex;
       flex-direction: column;
-      padding: 24px 28px;
-      gap: 20px;
     }
 
-    /* ==========================================================================
-       2. 헤더 영역 (Header & Meta)
-       ========================================================================== */
-    header.app-header {
-      display: flex;
+    .badge-kbeauty {
+      display: inline-flex;
       align-items: center;
-      justify-content: space-between;
-      padding: 16px 24px;
-      background: var(--bg-panel);
-      backdrop-filter: var(--glass-blur);
-      -webkit-backdrop-filter: var(--glass-blur);
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow-subtle);
-      flex-wrap: wrap;
-      gap: 16px;
+      gap: 6px;
+      width: fit-content;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--gold-primary);
+      background: rgba(226, 175, 127, 0.12);
+      border: 1px solid rgba(226, 175, 127, 0.28);
+      padding: 3px 10px;
+      border-radius: 20px;
+      margin-bottom: 6px;
+    }
+    .badge-kbeauty::before {
+      content: '';
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--gold-primary);
+      box-shadow: 0 0 6px var(--gold-primary);
     }
 
-    .brand-group {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-
-    .brand-logo-icon {
-      width: 42px;
-      height: 42px;
-      border-radius: var(--radius-md);
-      background: linear-gradient(135deg, var(--color-dominant), var(--color-sub), var(--color-accent));
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 4px 14px var(--accent-brand-glow);
-      transition: background 0.4s ease;
-      flex-shrink: 0;
-    }
-    .brand-logo-icon svg {
-      width: 22px;
-      height: 22px;
-      stroke: #ffffff;
-      fill: none;
-      filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5));
-    }
-
-    .brand-title-wrap h1 {
-      font-size: 1.35rem;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      color: var(--text-primary);
+    .main-title {
+      font-family: 'Cormorant Garamond', 'Noto Sans KR', serif;
+      font-size: 1.85rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: #fff;
       display: flex;
       align-items: center;
       gap: 10px;
-      flex-wrap: wrap;
     }
-    .brand-title-wrap h1 span.badge {
-      font-size: 0.72rem;
-      font-weight: 600;
-      padding: 3px 9px;
-      border-radius: var(--radius-full);
-      background: var(--accent-brand-glow);
-      color: var(--accent-brand);
-      border: 1px solid var(--accent-brand);
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-    }
-    .brand-title-wrap p {
-      font-size: 0.84rem;
-      color: var(--text-secondary);
-      margin-top: 2px;
+    .main-title span.accent-italic {
+      font-style: italic;
+      color: var(--gold-primary);
+      font-family: 'Cormorant Garamond', serif;
     }
 
+    .sub-title {
+      font-size: 0.86rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+      font-weight: 400;
+    }
+
+    /* Header Actions */
     .header-actions {
       display: flex;
       align-items: center;
       gap: 10px;
+      flex-wrap: wrap;
     }
 
-    /* Buttons */
     .btn {
       display: inline-flex;
       align-items: center;
-      justify-content: center;
-      gap: 7px;
-      padding: 8px 16px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      border-radius: var(--radius-md);
-      border: 1px solid var(--border-color);
-      background: var(--bg-card);
-      color: var(--text-primary);
+      gap: 8px;
+      padding: 9px 16px;
+      font-size: 0.84rem;
+      font-weight: 500;
+      border-radius: var(--radius-sm);
       cursor: pointer;
-      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-      user-select: none;
-      text-decoration: none;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      border: 1px solid transparent;
+      font-family: inherit;
+      white-space: nowrap;
     }
-    .btn:hover {
-      background: var(--bg-card-hover);
-      border-color: var(--border-color-focus);
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-main);
+      border-color: var(--border-subtle);
+    }
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.2);
       transform: translateY(-1px);
     }
-    .btn:active {
-      transform: translateY(0);
-    }
+
     .btn-primary {
-      background: var(--accent-brand);
-      color: #ffffff;
-      border-color: transparent;
-      box-shadow: 0 4px 14px var(--accent-brand-glow);
+      background: linear-gradient(135deg, #e2af7f 0%, #ca8a4b 100%);
+      color: #111;
+      font-weight: 600;
+      box-shadow: 0 4px 14px rgba(226, 175, 127, 0.25);
     }
     .btn-primary:hover {
-      filter: brightness(1.08);
-      background: var(--accent-brand);
-    }
-    .btn-sm {
-      padding: 5px 11px;
-      font-size: 0.78rem;
-      border-radius: var(--radius-sm);
+      background: linear-gradient(135deg, #ebd1b8 0%, #e2af7f 100%);
+      box-shadow: 0 6px 18px rgba(226, 175, 127, 0.38);
+      transform: translateY(-1px);
     }
 
-    /* ==========================================================================
-       3. 메인 그리드 워크스페이스 (좌측 컨트롤 + 우측 캔버스)
-       ========================================================================== */
-    .workspace-grid {
-      display: grid;
-      grid-template-columns: 460px 1fr;
-      gap: 24px;
+    /* Mobile Quick Switcher Bar (Visible on mobile/tablet) */
+    .view-toggle-bar {
+      display: none;
+      background: rgba(20, 23, 33, 0.95);
+      padding: 8px 16px;
+      border-bottom: 1px solid var(--border-subtle);
+      position: sticky;
+      top: 0;
+      z-index: 45;
+    }
+    .view-toggle-inner {
+      display: flex;
+      max-width: 500px;
+      margin: 0 auto;
+      background: rgba(0, 0, 0, 0.4);
+      padding: 4px;
+      border-radius: 10px;
+    }
+    .toggle-btn {
       flex: 1;
+      padding: 8px;
+      font-size: 0.82rem;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      border-radius: 7px;
+      cursor: pointer;
+      font-family: inherit;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    .toggle-btn.active {
+      background: var(--gold-primary);
+      color: #0d0f14;
+      font-weight: 600;
     }
 
-    @media (max-width: 1200px) {
-      .workspace-grid {
-        grid-template-columns: 1fr;
+    /* =========================================================
+       3. MAIN LAYOUT: TWO COLUMNS (STUDIO vs BOARD)
+       ========================================================= */
+    main.app-layout {
+      max-width: 1560px;
+      margin: 24px auto 60px;
+      padding: 0 24px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 28px;
+      align-items: start;
+    }
+
+    @media (min-width: 1280px) {
+      main.app-layout {
+        grid-template-columns: 520px 1fr;
+        gap: 32px;
       }
     }
 
-    /* 패널 공통 */
-    .panel {
-      background: var(--bg-panel);
-      backdrop-filter: var(--glass-blur);
-      -webkit-backdrop-filter: var(--glass-blur);
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius-lg);
+    /* =========================================================
+       4. LEFT PANEL: STEP-BY-STEP DESIGN STUDIO
+       ========================================================= */
+    .studio-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* Step Card Container */
+    .step-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
       padding: 24px;
       box-shadow: var(--shadow-card);
-      display: flex;
-      flex-direction: column;
-      gap: 22px;
-    }
-
-    .panel-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding-bottom: 14px;
-      border-bottom: 1px solid var(--border-color);
-    }
-    .panel-title {
-      font-size: 1.05rem;
-      font-weight: 700;
-      letter-spacing: -0.01em;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .panel-subtitle {
-      font-size: 0.78rem;
-      color: var(--text-muted);
-      font-weight: 400;
-    }
-
-    /* ==========================================================================
-       4. 좌측 패널: 색상 선택 & 역할 슬롯 & 스왑
-       ========================================================================== */
-    .color-slots-container {
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
-
-    .color-slot-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius-md);
-      padding: 14px 16px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 14px;
-      transition: all 0.25s ease;
       position: relative;
-      overflow: hidden;
+      transition: border-color 0.25s, box-shadow 0.25s;
     }
-    .color-slot-card::before {
-      content: "";
-      position: absolute;
-      left: 0;
-      top: 0;
-      bottom: 0;
-      width: 5px;
-      background: var(--slot-color);
-      transition: background 0.3s ease;
-    }
-    .color-slot-card:hover {
-      background: var(--bg-card-hover);
-      border-color: var(--border-color-focus);
+    .step-card:hover, .step-card:focus-within {
+      border-color: rgba(226, 175, 127, 0.35);
+      box-shadow: 0 14px 40px -8px rgba(0, 0, 0, 0.65), 0 0 15px rgba(226, 175, 127, 0.08);
     }
 
-    .slot-meta {
-      flex: 1;
+    .step-header {
       display: flex;
-      flex-direction: column;
-      gap: 3px;
-    }
-    .slot-role-tag {
-      font-size: 0.72rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .slot-role-tag .role-ratio-badge {
-      font-family: 'Montserrat', sans-serif;
-      font-size: 0.78rem;
-      padding: 1px 6px;
-      border-radius: var(--radius-sm);
-      background: rgba(255, 255, 255, 0.08);
-      color: var(--text-primary);
-    }
-    .slot-name-korean {
-      font-size: 0.96rem;
-      font-weight: 700;
-      color: var(--text-primary);
-    }
-    .slot-desc {
-      font-size: 0.76rem;
-      color: var(--text-secondary);
-      line-height: 1.3;
+      align-items: flex-start;
+      gap: 14px;
+      margin-bottom: 18px;
     }
 
-    .slot-color-interactive {
+    .step-number {
       display: flex;
       align-items: center;
-      gap: 10px;
-    }
-
-    /* 네이티브 컬러 피커 커스텀 래퍼 */
-    .color-picker-button-wrap {
-      position: relative;
-      width: 46px;
-      height: 46px;
-      border-radius: var(--radius-md);
-      overflow: hidden;
-      border: 2px solid rgba(255, 255, 255, 0.3);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-      cursor: pointer;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-      flex-shrink: 0;
-    }
-    .color-picker-button-wrap:hover {
-      transform: scale(1.08);
-      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
-    }
-    .color-picker-button-wrap input[type="color"] {
-      position: absolute;
-      top: -10px;
-      left: -10px;
-      width: 70px;
-      height: 70px;
-      border: none;
-      outline: none;
-      cursor: pointer;
-      opacity: 0;
-    }
-    .color-preview-box {
-      width: 100%;
-      height: 100%;
-      transition: background-color 0.2s ease;
-    }
-
-    .hex-input-wrap {
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-      width: 90px;
-    }
-    .hex-input-wrap label {
-      font-size: 0.68rem;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      font-family: 'Montserrat', sans-serif;
-    }
-    .hex-input {
-      width: 100%;
-      padding: 6px 8px;
-      background: var(--bg-input);
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius-sm);
-      font-family: 'Montserrat', monospace;
-      font-size: 0.84rem;
-      font-weight: 600;
-      color: var(--text-primary);
-      text-align: center;
-      transition: border 0.2s ease;
-      text-transform: uppercase;
-    }
-    .hex-input:focus {
-      outline: none;
-      border-color: var(--accent-brand);
-      box-shadow: 0 0 0 2px var(--accent-brand-glow);
-    }
-
-    /* 역할 스왑 (Role Swap) 바 */
-    .role-swap-toolbar {
-      background: var(--bg-card);
-      border: 1px dashed var(--border-color-focus);
-      border-radius: var(--radius-md);
-      padding: 12px 14px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-    .role-swap-title {
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: var(--text-secondary);
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .swap-btn-group {
-      display: flex;
-      gap: 6px;
-    }
-
-    /* K-뷰티 트렌드 배색 프리셋 그리드 */
-    .preset-section {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    .preset-header {
-      font-size: 0.82rem;
-      font-weight: 700;
-      color: var(--text-secondary);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .presets-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 8px;
-    }
-    .preset-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius-md);
-      padding: 8px 10px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      transition: all 0.2s ease;
-      text-align: left;
-    }
-    .preset-card:hover {
-      background: var(--bg-card-hover);
-      border-color: var(--border-color-focus);
-      transform: translateY(-2px);
-    }
-    .preset-swatches {
-      display: flex;
+      justify-content: center;
       width: 32px;
       height: 32px;
       border-radius: 50%;
-      overflow: hidden;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+      background: rgba(226, 175, 127, 0.15);
+      color: var(--gold-primary);
+      font-weight: 700;
+      font-size: 0.9rem;
+      border: 1px solid rgba(226, 175, 127, 0.3);
       flex-shrink: 0;
-    }
-    .preset-swatch-slice {
-      height: 100%;
-    }
-    .preset-info {
-      overflow: hidden;
-    }
-    .preset-name {
-      font-size: 0.8rem;
-      font-weight: 700;
-      color: var(--text-primary);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .preset-tone {
-      font-size: 0.68rem;
-      color: var(--text-muted);
-      white-space: nowrap;
-    }
-
-    /* ==========================================================================
-       5. 하단 컨트롤러: 면적비 조절 슬라이더 & 황금비율 버튼
-       ========================================================================== */
-    .ratio-controller-section {
-      background: var(--bg-panel);
-      backdrop-filter: var(--glass-blur);
-      -webkit-backdrop-filter: var(--glass-blur);
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius-lg);
-      padding: 20px 24px;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      box-shadow: var(--shadow-card);
-    }
-
-    .ratio-controller-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-
-    .ratio-preset-chips {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      flex-wrap: wrap;
-    }
-    .chip-btn {
-      padding: 4px 10px;
-      font-size: 0.74rem;
-      font-weight: 600;
-      border-radius: var(--radius-full);
-      border: 1px solid var(--border-color);
-      background: var(--bg-card);
-      color: var(--text-secondary);
-      cursor: pointer;
-      transition: all 0.2s ease;
-      font-family: 'Montserrat', sans-serif;
-    }
-    .chip-btn:hover {
-      background: var(--bg-card-hover);
-      color: var(--text-primary);
-      border-color: var(--border-color-focus);
-    }
-    .chip-btn.active {
-      background: var(--accent-brand);
-      color: #ffffff;
-      border-color: transparent;
-    }
-
-    /* 슬라이더 컨트롤러 그룹 */
-    .sliders-group {
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
-
-    .slider-row {
-      display: grid;
-      grid-template-columns: 100px 1fr 65px 36px;
-      align-items: center;
-      gap: 14px;
-    }
-
-    .slider-label-block {
-      display: flex;
-      flex-direction: column;
-    }
-    .slider-role-name {
-      font-size: 0.82rem;
-      font-weight: 700;
-      color: var(--text-primary);
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-    .slider-role-sub {
-      font-size: 0.68rem;
-      color: var(--text-muted);
-    }
-
-    /* 커스텀 슬라이더 트랙 */
-    .range-slider-wrap {
-      position: relative;
-      display: flex;
-      align-items: center;
-    }
-    .custom-range {
-      -webkit-appearance: none;
-      width: 100%;
-      height: 8px;
-      border-radius: var(--radius-full);
-      background: rgba(255, 255, 255, 0.1);
-      outline: none;
-      transition: background 0.2s ease;
-      cursor: pointer;
-    }
-    [data-theme="light"] .custom-range {
-      background: rgba(0, 0, 0, 0.1);
-    }
-    .custom-range::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 22px;
-      height: 22px;
-      border-radius: 50%;
-      background: var(--thumb-color, #ffffff);
-      cursor: grab;
-      border: 3px solid #ffffff;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-      transition: transform 0.15s ease, box-shadow 0.15s ease;
-    }
-    .custom-range::-webkit-slider-thumb:active {
-      cursor: grabbing;
-      transform: scale(1.22);
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
-    }
-    .custom-range::-moz-range-thumb {
-      width: 22px;
-      height: 22px;
-      border-radius: 50%;
-      background: var(--thumb-color, #ffffff);
-      cursor: grab;
-      border: 3px solid #ffffff;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-      transition: transform 0.15s ease;
-    }
-
-    .slider-value-display {
-      font-family: 'Montserrat', sans-serif;
-      font-size: 1.05rem;
-      font-weight: 700;
-      color: var(--text-primary);
-      text-align: right;
-    }
-
-    /* 고정(Lock) 토글 버튼 */
-    .lock-toggle-btn {
-      width: 32px;
-      height: 32px;
-      border-radius: var(--radius-sm);
-      border: 1px solid var(--border-color);
-      background: var(--bg-card);
-      color: var(--text-muted);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-    .lock-toggle-btn:hover {
-      color: var(--text-primary);
-      border-color: var(--border-color-focus);
-    }
-    .lock-toggle-btn.locked {
-      background: rgba(232, 165, 152, 0.2);
-      color: var(--accent-brand);
-      border-color: var(--accent-brand);
-    }
-    .lock-toggle-btn svg {
-      width: 15px;
-      height: 15px;
-    }
-
-    /* 면적비 통합 프로그레스 바 */
-    .ratio-stacked-bar-wrap {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-    .ratio-stacked-bar {
-      width: 100%;
-      height: 12px;
-      border-radius: var(--radius-full);
-      overflow: hidden;
-      display: flex;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--border-color);
-    }
-    .bar-segment {
-      height: 100%;
-      transition: width 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), background-color 0.3s ease;
-      position: relative;
-    }
-    .bar-segment-dominant { background-color: var(--color-dominant); width: 70%; }
-    .bar-segment-sub { background-color: var(--color-sub); width: 25%; }
-    .bar-segment-accent { background-color: var(--color-accent); width: 5%; }
-
-    .ratio-bar-legend {
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.72rem;
-      font-family: 'Montserrat', sans-serif;
-      font-weight: 600;
-      color: var(--text-secondary);
-    }
-
-    /* ==========================================================================
-       6. 우측 패널: 시각화 캔버스 (듀얼 뷰 & 뷰티 무드)
-       ========================================================================== */
-    .canvas-panel {
-      display: flex;
-      flex-direction: column;
-      gap: 18px;
-    }
-
-    .canvas-nav-tabs {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      background: var(--bg-card);
-      padding: 5px;
-      border-radius: var(--radius-md);
-      border: 1px solid var(--border-color);
-      width: fit-content;
-    }
-    .tab-btn {
-      padding: 7px 16px;
-      font-size: 0.82rem;
-      font-weight: 600;
-      border-radius: var(--radius-sm);
-      border: none;
-      background: transparent;
-      color: var(--text-secondary);
-      cursor: pointer;
-      transition: all 0.2s ease;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .tab-btn:hover {
-      color: var(--text-primary);
-    }
-    .tab-btn.active {
-      background: var(--bg-panel-solid);
-      color: var(--text-primary);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-    }
-
-    .view-content-container {
-      position: relative;
-      min-height: 480px;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .view-pane {
-      display: none;
-      width: 100%;
-      height: 100%;
-      animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    }
-    .view-pane.active {
-      display: flex;
-      flex-direction: column;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(6px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* -------------------------------------------------------------
-       A 뷰: SVG 정밀 도넛 차트 (Donut Chart)
-       ------------------------------------------------------------- */
-    .donut-view-wrap {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-      gap: 20px;
-      height: 100%;
-    }
-
-    .donut-chart-stage {
-      position: relative;
-      width: 320px;
-      height: 320px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .donut-svg {
-      width: 100%;
-      height: 100%;
-      transform: rotate(-90deg); /* 12시 방향부터 시작 */
-      overflow: visible;
-    }
-    .donut-slice {
-      fill: none;
-      stroke-width: 34;
-      stroke-linecap: round;
-      cursor: pointer;
-      transition: stroke-dasharray 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
-                  stroke-dashoffset 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
-                  stroke 0.3s ease,
-                  transform 0.2s ease;
-      transform-origin: 50% 50%;
-    }
-    .donut-slice:hover {
-      stroke-width: 38;
-      filter: brightness(1.1);
-    }
-
-    .donut-center-badge {
-      position: absolute;
-      width: 180px;
-      height: 180px;
-      border-radius: 50%;
-      background: var(--bg-panel-solid);
-      border: 1px solid var(--border-color);
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 16px;
-      pointer-events: none;
-      transition: background 0.3s ease;
-    }
-    .center-ratio-formula {
-      font-family: 'Montserrat', sans-serif;
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: var(--text-primary);
-      letter-spacing: -0.02em;
-    }
-    .center-label {
-      font-size: 0.72rem;
-      color: var(--accent-brand);
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
       margin-top: 2px;
     }
-    .center-concept-chip {
-      font-size: 0.74rem;
-      color: var(--text-secondary);
-      margin-top: 6px;
-      padding: 2px 10px;
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: var(--radius-full);
-    }
 
-    .donut-legend-cards {
-      display: flex;
-      justify-content: center;
-      gap: 16px;
-      width: 100%;
-      max-width: 620px;
-      flex-wrap: wrap;
+    .step-titles {
+      flex: 1;
     }
-    .donut-legend-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius-md);
-      padding: 10px 16px;
+    .step-title-row {
       display: flex;
       align-items: center;
-      gap: 12px;
-      flex: 1;
-      min-width: 160px;
-      transition: all 0.2s ease;
+      gap: 8px;
+      flex-wrap: wrap;
     }
-    .donut-legend-card:hover {
-      background: var(--bg-card-hover);
+    .step-title {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: #fff;
+    }
+    .step-subtitle {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 3px;
+    }
+
+    .step-tip {
+      background: rgba(255, 255, 255, 0.03);
+      border-left: 2px solid var(--gold-primary);
+      padding: 8px 12px;
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      font-size: 0.77rem;
+      color: var(--text-muted);
+      margin-bottom: 18px;
+      line-height: 1.5;
+    }
+    .step-tip strong {
+      color: var(--gold-primary);
+      font-weight: 600;
+    }
+
+    /* --- STEP 1: THEME & KEYWORDS --- */
+    .common-theme-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(90deg, rgba(226, 175, 127, 0.12) 0%, rgba(20, 23, 33, 0.4) 100%);
+      border: 1px dashed rgba(226, 175, 127, 0.3);
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      margin-bottom: 16px;
+    }
+    .common-theme-label {
+      font-size: 0.76rem;
+      color: var(--gold-primary);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 600;
+    }
+    .common-theme-val {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .subtheme-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    @media (max-width: 500px) {
+      .subtheme-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .subtheme-btn {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 12px 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: all 0.22s ease;
+      color: var(--text-main);
+      text-align: center;
+    }
+    .subtheme-btn:hover {
+      background: rgba(255, 255, 255, 0.07);
+      border-color: rgba(255, 255, 255, 0.2);
       transform: translateY(-2px);
     }
-    .legend-color-dot {
-      width: 14px;
-      height: 14px;
-      border-radius: 50%;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-      flex-shrink: 0;
+    .subtheme-btn.active {
+      background: rgba(226, 175, 127, 0.16);
+      border-color: var(--gold-primary);
+      box-shadow: 0 0 14px rgba(226, 175, 127, 0.22);
     }
-    .legend-text-col {
+    .subtheme-icon {
+      font-size: 1.35rem;
+      line-height: 1;
+    }
+    .subtheme-name {
+      font-weight: 600;
+      font-size: 0.86rem;
+      letter-spacing: 0.02em;
+    }
+    .subtheme-kr {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+    .subtheme-btn.active .subtheme-name {
+      color: var(--gold-primary);
+    }
+
+    /* Keyword Tags Section */
+    .keyword-section {
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 14px;
+    }
+    .keyword-section-title {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .keyword-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .keyword-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      font-size: 0.78rem;
+      border-radius: 30px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-main);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .keyword-chip:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+    .keyword-chip.selected {
+      background: rgba(226, 175, 127, 0.2);
+      border-color: var(--gold-primary);
+      color: #fff;
+      font-weight: 500;
+    }
+    .keyword-chip .check-icon {
+      font-size: 0.72rem;
+      color: var(--gold-primary);
+    }
+
+    /* --- STEP 2: COLOR PALETTE PLANNING --- */
+    .color-picker-group {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .color-row-item {
+      display: grid;
+      grid-template-columns: 140px 1fr auto;
+      align-items: center;
+      gap: 12px;
+      background: rgba(0, 0, 0, 0.22);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      transition: border-color 0.2s;
+    }
+    .color-row-item:hover {
+      border-color: rgba(255, 255, 255, 0.16);
+    }
+
+    .color-meta {
       display: flex;
       flex-direction: column;
     }
-    .legend-title {
-      font-size: 0.8rem;
-      font-weight: 700;
-      color: var(--text-primary);
-    }
-    .legend-pct {
-      font-family: 'Montserrat', sans-serif;
-      font-size: 0.95rem;
-      font-weight: 700;
-      color: var(--text-secondary);
-    }
-
-    /* -------------------------------------------------------------
-       B 뷰: 에디토리얼 무드보드 추상화 레이아웃 (Abstract Moodboard)
-       ------------------------------------------------------------- */
-    .moodboard-stage {
-      width: 100%;
-      height: 480px;
-      border-radius: var(--radius-lg);
-      border: 1px solid var(--border-color);
-      position: relative;
-      overflow: hidden;
-      box-shadow: var(--shadow-subtle);
-      background-color: var(--color-dominant);
-      transition: background-color 0.4s ease;
-      display: flex;
-      padding: 24px;
-      gap: 20px;
-    }
-
-    /* 무드보드 배경 텍스처 & 매거진 무드 타이포 */
-    .moodboard-bg-watermark {
-      position: absolute;
-      right: 20px;
-      bottom: 16px;
-      font-family: 'Playfair Display', serif;
-      font-size: 4.8rem;
-      font-weight: 600;
-      font-style: italic;
-      color: rgba(0, 0, 0, 0.08);
-      pointer-events: none;
-      line-height: 0.9;
-      user-select: none;
-      z-index: 1;
-      text-transform: uppercase;
-    }
-    [data-theme="dark"] .moodboard-bg-watermark {
-      color: rgba(255, 255, 255, 0.08);
-    }
-
-    /* 주조색 레이어 안내 */
-    .dominant-canvas-badge {
-      position: absolute;
-      top: 24px;
-      left: 24px;
-      background: rgba(0, 0, 0, 0.6);
-      backdrop-filter: blur(10px);
-      color: #ffffff;
-      padding: 6px 14px;
-      border-radius: var(--radius-full);
-      font-size: 0.76rem;
+    .color-role-badge {
+      font-size: 0.74rem;
       font-weight: 700;
       letter-spacing: 0.04em;
       display: flex;
       align-items: center;
-      gap: 8px;
-      z-index: 5;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      gap: 6px;
     }
-    .dominant-canvas-badge .dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--color-dominant);
-      border: 1px solid rgba(255,255,255,0.6);
+    .color-ratio {
+      font-size: 0.68rem;
+      padding: 1px 6px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-muted);
+    }
+    .color-role-desc {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-top: 2px;
     }
 
-    /* 서브색 블록 영역 (보조색 비율에 따라 면적이 실시간 가변) */
-    .moodboard-sub-block {
-      background-color: var(--color-sub);
-      border-radius: var(--radius-md);
-      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.25);
-      border: 1px solid rgba(255, 255, 255, 0.15);
+    .color-input-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* Stylized Custom Native Color Picker */
+    .color-swatch-box {
+      position: relative;
+      width: 38px;
+      height: 38px;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 2px solid rgba(255, 255, 255, 0.25);
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+      flex-shrink: 0;
+    }
+    .color-swatch-box input[type="color"] {
+      position: absolute;
+      top: -10px;
+      left: -10px;
+      width: 60px;
+      height: 60px;
+      border: none;
+      cursor: pointer;
+      opacity: 0;
+    }
+    .color-swatch-preview {
+      width: 100%;
+      height: 100%;
+      transition: background-color 0.15s;
+    }
+
+    .color-hex-input {
+      font-family: 'Outfit', monospace;
+      font-size: 0.82rem;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      padding: 6px 10px;
+      color: #fff;
+      width: 86px;
+      text-transform: uppercase;
+      text-align: center;
+    }
+    .color-hex-input:focus {
+      outline: none;
+      border-color: var(--gold-primary);
+    }
+
+    .color-presets-row {
+      display: flex;
+      gap: 6px;
+    }
+    .preset-dot {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      cursor: pointer;
+      transition: transform 0.15s;
+    }
+    .preset-dot:hover {
+      transform: scale(1.25);
+      border-color: #fff;
+    }
+
+    /* Color Balance Ratio Bar */
+    .ratio-visualizer {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: var(--radius-sm);
+      padding: 12px;
+      border: 1px solid var(--border-subtle);
+    }
+    .ratio-visualizer-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+    .ratio-bar {
+      display: flex;
+      height: 14px;
+      border-radius: 7px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .ratio-segment {
+      height: 100%;
+      transition: background-color 0.25s, width 0.3s ease;
+    }
+    .ratio-seg-dominant { width: 60%; }
+    .ratio-seg-sub { width: 30%; }
+    .ratio-seg-accent { width: 10%; }
+
+    /* --- STEP 3: MOTIF & FORM ELEMENTS --- */
+    .motif-input-group {
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
-      padding: 20px;
-      position: relative;
-      z-index: 2;
-      transition: width 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
-                  height 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
-                  background-color 0.3s ease;
-      min-width: 140px;
-      max-width: 70%;
+      gap: 16px;
     }
 
-    .sub-block-badge {
+    .motif-field-card {
+      background: rgba(0, 0, 0, 0.22);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 14px;
+      transition: border-color 0.2s;
+    }
+    .motif-field-card:focus-within {
+      border-color: rgba(226, 175, 127, 0.45);
+    }
+
+    .motif-label {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+    .motif-label .motif-icon {
+      color: var(--gold-primary);
+      font-size: 0.9rem;
+    }
+    .motif-desc {
+      font-size: 0.72rem;
+      color: var(--text-dim);
+      margin-bottom: 10px;
+    }
+
+    .motif-input {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      padding: 9px 12px;
+      color: #fff;
+      font-size: 0.84rem;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+    .motif-input:focus {
+      outline: none;
+      border-color: var(--gold-primary);
+      background: rgba(255, 255, 255, 0.08);
+      box-shadow: 0 0 10px rgba(226, 175, 127, 0.15);
+    }
+    .motif-input::placeholder {
+      color: rgba(255, 255, 255, 0.25);
+    }
+
+    .quick-tags-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .quick-tag {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      padding: 2px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .quick-tag:hover {
+      background: rgba(226, 175, 127, 0.15);
+      border-color: var(--gold-primary);
+      color: #fff;
+    }
+
+    /* =========================================================
+       5. RIGHT PANEL: LIVE DESIGN BOARD & CANVAS
+       ========================================================= */
+    .canvas-panel {
+      position: sticky;
+      top: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* The Board Container (Will be captured by html2canvas) */
+    .presentation-board {
+      background: #12151e;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: var(--radius-lg);
+      padding: 30px;
+      box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.7), 0 0 1px 1px rgba(226, 175, 127, 0.15);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Board Background Watermark & Grid Line */
+    .presentation-board::before {
+      content: 'ART MASK DESIGN BRIEF';
+      position: absolute;
+      top: 18px;
+      right: 25px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 3rem;
+      font-weight: 800;
+      color: rgba(255, 255, 255, 0.02);
+      letter-spacing: 0.08em;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+
+    /* Board Top Metadata (Student / Title) */
+    .board-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+      padding-bottom: 18px;
+      margin-bottom: 22px;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .board-title-group {
+      flex: 1;
+    }
+    .board-theme-badge {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      background: rgba(0, 0, 0, 0.5);
-      backdrop-filter: blur(8px);
-      color: #ffffff;
-      padding: 4px 10px;
-      border-radius: var(--radius-full);
       font-size: 0.72rem;
-      font-weight: 600;
-      width: fit-content;
-    }
-    .sub-block-title {
-      font-family: 'Montserrat', sans-serif;
-      font-size: 1.15rem;
       font-weight: 700;
-      color: #ffffff;
-      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--gold-primary);
+      margin-bottom: 6px;
+    }
+    .board-work-title-input {
+      font-family: 'Cormorant Garamond', 'Noto Sans KR', serif;
+      font-size: 1.55rem;
+      font-weight: 600;
+      color: #fff;
+      background: transparent;
+      border: none;
+      border-bottom: 1px dashed rgba(255, 255, 255, 0.2);
+      padding: 2px 4px;
+      width: 100%;
+      max-width: 420px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .board-work-title-input:focus {
+      border-bottom-color: var(--gold-primary);
     }
 
-    /* 액센트 컬러 포인트 오브젝트 (강조색 비율에 따라 크기 및 포인트 강조) */
-    .moodboard-accent-element {
-      position: absolute;
-      right: 36px;
-      top: 50%;
-      transform: translateY(-50%);
-      background-color: var(--color-accent);
-      border-radius: var(--radius-lg);
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
-      border: 2px solid rgba(255, 255, 255, 0.4);
+    .board-author-box {
       display: flex;
       flex-direction: column;
+      gap: 4px;
+      background: rgba(255, 255, 255, 0.03);
+      padding: 8px 14px;
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      text-align: right;
+    }
+    .author-input-row {
+      display: flex;
       align-items: center;
-      justify-content: center;
-      padding: 16px;
+      justify-content: flex-end;
       gap: 8px;
-      z-index: 3;
-      transition: width 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
-                  height 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
-                  background-color 0.3s ease;
-      text-align: center;
+      font-size: 0.76rem;
+      color: var(--text-muted);
     }
-    .accent-element-pill {
-      font-size: 0.68rem;
-      font-weight: 700;
-      background: #ffffff;
-      color: #000000;
-      padding: 2px 8px;
-      border-radius: var(--radius-full);
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    .author-input {
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+      color: #fff;
+      font-size: 0.78rem;
+      font-family: inherit;
+      width: 110px;
+      text-align: right;
+      padding: 1px 4px;
     }
-    .accent-element-value {
-      font-family: 'Montserrat', sans-serif;
-      font-size: 1.25rem;
-      font-weight: 800;
-      color: #ffffff;
-      text-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    .author-input:focus {
+      outline: none;
+      border-bottom-color: var(--gold-primary);
     }
 
-    /* 플로팅 기하학적 스트라이프 (강조 포인트 연출) */
-    .floating-stripe {
-      position: absolute;
-      left: 45%;
-      bottom: 30px;
-      height: 8px;
-      background: var(--color-accent);
-      border-radius: var(--radius-full);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-      z-index: 4;
-      transition: width 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), background-color 0.3s ease;
-    }
-
-    /* -------------------------------------------------------------
-       C 뷰: K-뷰티 메이크업 페이스 & 네일 시뮬레이션
-       ------------------------------------------------------------- */
-    .beauty-face-view-wrap {
+    /* Visual Simulation Area: Mask + Moodboard Side-by-Side */
+    .board-body-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 24px;
       align-items: center;
-      height: 100%;
-      min-height: 480px;
+      margin-bottom: 22px;
     }
-
-    @media (max-width: 860px) {
-      .beauty-face-view-wrap {
+    @media (max-width: 768px) {
+      .board-body-grid {
         grid-template-columns: 1fr;
       }
     }
 
-    .beauty-visual-box {
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius-lg);
+    /* The Mask Frame */
+    .mask-stage {
+      position: relative;
+      background: radial-gradient(circle at 50% 45%, rgba(32, 38, 55, 0.8) 0%, rgba(15, 17, 25, 0.95) 75%);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: var(--radius-md);
       padding: 20px;
       display: flex;
-      flex-direction: column;
-      align-items: center;
       justify-content: center;
-      height: 100%;
-      position: relative;
+      align-items: center;
+      min-height: 380px;
+      box-shadow: inset 0 0 35px rgba(0, 0, 0, 0.6);
+      overflow: hidden;
     }
-    .visual-box-tag {
+
+    /* Glow Backdrop reacting to Dominant Color */
+    .mask-ambient-glow {
       position: absolute;
-      top: 14px;
-      left: 16px;
-      font-size: 0.74rem;
+      width: 260px;
+      height: 260px;
+      border-radius: 50%;
+      background: var(--color-dominant);
+      opacity: 0.18;
+      filter: blur(60px);
+      pointer-events: none;
+      transition: background-color 0.3s ease, opacity 0.3s;
+    }
+
+    /* Vector SVG Art Mask */
+    .artmask-svg {
+      width: 100%;
+      max-width: 290px;
+      height: auto;
+      max-height: 350px;
+      filter: drop-shadow(0 15px 25px rgba(0, 0, 0, 0.65));
+      position: relative;
+      z-index: 2;
+    }
+
+    /* Dynamic SVG Layers */
+    .svg-dominant {
+      transition: fill 0.25s ease, stroke 0.25s ease;
+    }
+    .svg-sub {
+      transition: fill 0.25s ease, stroke 0.25s ease;
+    }
+    .svg-accent {
+      transition: fill 0.25s ease, stroke 0.25s ease;
+    }
+
+    /* Mini Moodboard Sidebar inside the Board */
+    .mini-moodboard {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .moodboard-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: var(--radius-sm);
+      padding: 14px;
+    }
+    .moodboard-card-title {
+      font-size: 0.72rem;
       font-weight: 700;
-      color: var(--text-secondary);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 10px;
       display: flex;
       align-items: center;
       gap: 6px;
     }
 
-    .face-svg-wrap {
-      width: 220px;
-      height: 290px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-top: 15px;
+    /* Swatches Display in Board */
+    .swatches-display {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
     }
-    .face-svg {
-      width: 100%;
-      height: 100%;
-      filter: drop-shadow(0 10px 24px rgba(0,0,0,0.3));
-    }
-
-    .nails-display-wrap {
-      display: flex;
-      gap: 10px;
-      align-items: flex-end;
-      margin-top: 20px;
-    }
-    .nail-finger {
+    .board-swatch-item {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 8px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 8px;
+      padding: 8px 4px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
     }
-    .nail-tip {
-      width: 28px;
-      border-radius: 14px 14px 6px 6px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-      border: 1px solid rgba(255,255,255,0.2);
-      transition: all 0.3s ease;
-      position: relative;
-      overflow: hidden;
+    .board-swatch-circle {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      margin-bottom: 6px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+      transition: background-color 0.25s ease;
     }
-    .nail-tip-1 { height: 60px; background-color: var(--color-dominant); }
-    .nail-tip-2 { height: 68px; background-color: var(--color-sub); }
-    .nail-tip-3 { height: 74px; background-color: var(--color-dominant); }
-    .nail-tip-4 { height: 66px; background-color: var(--color-accent); }
-    .nail-tip-5 { height: 54px; background-color: var(--color-sub); }
-    
-    .nail-tip::after {
-      content: "";
-      position: absolute;
-      top: 4px;
-      left: 4px;
-      width: 6px;
-      height: 24px;
-      background: rgba(255, 255, 255, 0.45);
-      border-radius: 4px;
-      filter: blur(1px);
-    }
-    .nail-role-label {
+    .board-swatch-name {
       font-size: 0.68rem;
-      color: var(--text-muted);
       font-weight: 600;
+      color: #fff;
+    }
+    .board-swatch-hex {
+      font-family: monospace;
+      font-size: 0.64rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+    .board-swatch-ratio {
+      font-size: 0.62rem;
+      color: var(--gold-primary);
+      margin-top: 1px;
     }
 
-    /* -------------------------------------------------------------
-       D 뷰: Split 모드 (도넛 + 무드보드 나란히 보기)
-       ------------------------------------------------------------- */
-    .split-view-wrap {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-      height: 100%;
-      min-height: 480px;
-    }
-    @media (max-width: 992px) {
-      .split-view-wrap {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    /* ==========================================================================
-       7. 색채학 학습 & 조화도 분석 코멘터리 패널
-       ========================================================================== */
-    .education-insight-card {
-      background: var(--bg-panel);
-      backdrop-filter: var(--glass-blur);
-      -webkit-backdrop-filter: var(--glass-blur);
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius-lg);
-      padding: 20px 24px;
-      box-shadow: var(--shadow-card);
-      display: grid;
-      grid-template-columns: 1.4fr 1fr;
-      gap: 24px;
-      align-items: center;
-    }
-    @media (max-width: 900px) {
-      .education-insight-card {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .insight-text-group h3 {
-      font-size: 1.05rem;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      color: var(--text-primary);
-    }
-    .insight-desc {
-      font-size: 0.86rem;
-      color: var(--text-secondary);
-      margin-top: 6px;
-      line-height: 1.6;
-    }
-    .insight-tags {
+    /* Active Keywords Board View */
+    .board-keywords-wrap {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 12px;
+      gap: 6px;
     }
-    .insight-pill {
+    .board-keyword-tag {
       font-size: 0.74rem;
+      background: rgba(226, 175, 127, 0.12);
+      color: #fce7cf;
+      border: 1px solid rgba(226, 175, 127, 0.3);
+      padding: 3px 9px;
+      border-radius: 20px;
+      font-weight: 500;
+    }
+
+    /* Board Form Elements Summary Card */
+    .board-form-summary {
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding-top: 18px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+    @media (max-width: 650px) {
+      .board-form-summary {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .form-summary-item {
+      background: rgba(255, 255, 255, 0.02);
+      border-left: 2px solid var(--gold-primary);
+      padding: 10px 12px;
+      border-radius: 0 6px 6px 0;
+    }
+    .form-summary-label {
+      font-size: 0.7rem;
       font-weight: 600;
-      padding: 3px 10px;
-      border-radius: var(--radius-full);
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
-      color: var(--text-primary);
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .form-summary-value {
+      font-size: 0.8rem;
+      color: #fff;
+      margin-top: 4px;
+      word-break: break-all;
+      min-height: 20px;
+      line-height: 1.45;
     }
 
-    .contrast-meter-box {
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius-md);
-      padding: 14px 18px;
+    /* Board Footer Checklist for Students */
+    .board-footer {
+      margin-top: 20px;
+      padding-top: 14px;
+      border-top: 1px dashed rgba(255, 255, 255, 0.07);
       display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    .meter-row {
-      display: flex;
-      align-items: center;
       justify-content: space-between;
-      font-size: 0.78rem;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      font-size: 0.74rem;
+      color: var(--text-dim);
     }
-    .meter-label {
-      color: var(--text-secondary);
+    .golden-ratio-check {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--gold-primary);
+      font-weight: 500;
     }
-    .meter-val {
-      font-family: 'Montserrat', sans-serif;
-      font-weight: 700;
-      color: var(--text-primary);
-    }
-    .meter-bar {
-      width: 100%;
-      height: 6px;
-      background: rgba(255, 255, 255, 0.08);
-      border-radius: var(--radius-full);
-      overflow: hidden;
-    }
-    .meter-fill {
-      height: 100%;
-      border-radius: var(--radius-full);
-      background: var(--accent-brand);
-      transition: width 0.3s ease;
+    .golden-ratio-check::before {
+      content: '✓';
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 14px;
+      height: 14px;
+      background: rgba(226, 175, 127, 0.2);
+      border-radius: 50%;
+      font-size: 0.65rem;
     }
 
-    /* ==========================================================================
-       8. 모달 & 토스트 알림
-       ========================================================================== */
-    .toast-notice {
+    /* Export Toast Message */
+    .toast-msg {
       position: fixed;
       bottom: 24px;
-      right: 28px;
-      background: var(--bg-panel-solid);
-      border: 1px solid var(--accent-brand);
-      color: var(--text-primary);
+      right: 24px;
+      background: #1f2430;
+      border: 1px solid var(--gold-primary);
+      color: #fff;
       padding: 12px 20px;
-      border-radius: var(--radius-md);
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      border-radius: var(--radius-sm);
+      font-size: 0.85rem;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      z-index: 1000;
       display: flex;
       align-items: center;
       gap: 10px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      z-index: 1000;
-      transform: translateY(100px);
-      opacity: 0;
-      pointer-events: none;
-      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    .toast-notice.show {
+    .toast-msg.show {
       transform: translateY(0);
       opacity: 1;
-      pointer-events: auto;
     }
 
-    /* 반응형 세부 패딩 */
+    /* =========================================================
+       6. RESPONSIVE BREAKPOINTS
+       ========================================================= */
+    @media (max-width: 1024px) {
+      main.app-layout {
+        grid-template-columns: 1fr;
+      }
+      .canvas-panel {
+        position: relative;
+        top: 0;
+      }
+      .view-toggle-bar {
+        display: block;
+      }
+      /* On mobile, support toggling between Editor and Live Board */
+      body.show-canvas-only .studio-panel {
+        display: none !important;
+      }
+      body.show-canvas-only .canvas-panel {
+        display: flex !important;
+      }
+      body.show-studio-only .canvas-panel {
+        display: none !important;
+      }
+      body.show-studio-only .studio-panel {
+        display: flex !important;
+      }
+    }
+
     @media (max-width: 640px) {
-      .app-layout {
-        padding: 12px 14px;
-        gap: 14px;
+      header.hero-header {
+        padding: 16px 16px 12px;
       }
-      header.app-header {
-        padding: 14px;
+      .main-title {
+        font-size: 1.45rem;
       }
-      .brand-title-wrap h1 {
-        font-size: 1.12rem;
+      main.app-layout {
+        margin: 16px auto 40px;
+        padding: 0 14px;
       }
-      .panel {
+      .step-card {
         padding: 16px;
       }
-      .slider-row {
-        grid-template-columns: 80px 1fr 48px 32px;
-        gap: 8px;
+      .presentation-board {
+        padding: 18px 14px;
+      }
+      .board-header {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .board-author-box {
+        text-align: left;
+        align-items: flex-start;
+      }
+      .author-input-row {
+        justify-content: flex-start;
+      }
+      .color-row-item {
+        grid-template-columns: 1fr auto;
+      }
+      .color-meta {
+        grid-column: 1 / -1;
+      }
+    }
+
+    /* Print Stylesheet for Homework / Portfolio Submission */
+    @media print {
+      body {
+        background: #fff !important;
+        color: #000 !important;
+      }
+      header.hero-header, .studio-panel, .header-actions, .view-toggle-bar, .toast-msg {
+        display: none !important;
+      }
+      main.app-layout {
+        display: block !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      .canvas-panel {
+        position: static !important;
+      }
+      .presentation-board {
+        background: #fff !important;
+        color: #111 !important;
+        border: 2px solid #ccc !important;
+        box-shadow: none !important;
+        padding: 20px !important;
+      }
+      .board-work-title-input, .author-input {
+        color: #000 !important;
+        border-bottom: 1px solid #999 !important;
+      }
+      .board-keyword-tag {
+        background: #f0f0f0 !important;
+        color: #111 !important;
+        border: 1px solid #ccc !important;
+      }
+      .form-summary-item {
+        background: #fafafa !important;
+        border-left: 2px solid #333 !important;
+      }
+      .form-summary-value {
+        color: #111 !important;
       }
     }
   </style>
 </head>
-<body data-theme="dark">
+<body class="show-both">
 
-  <!-- Ambient Glow Elements -->
-  <div class="ambient-glow glow-1" id="glow1"></div>
-  <div class="ambient-glow glow-2" id="glow2"></div>
-  <div class="ambient-glow glow-3" id="glow3"></div>
-
-  <div class="app-layout">
-    
-    <!-- ====================================================================
-         헤더: 로고, 타이틀, 실습 주차, 테마 토글, 리셋 버튼
-         ==================================================================== -->
-    <header class="app-header">
-      <div class="brand-group">
-        <div class="brand-logo-icon" id="brandLogoIcon">
-          <svg viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4 5 5 0 013-4.5 4 4 0 011.5-7.5 4 4 0 017 0 4 4 0 011.5 7.5A5 5 0 0119 17a4 4 0 01-4 4H7z" />
-          </svg>
-        </div>
-        <div class="brand-title-wrap">
-          <h1>
-            뷰티 컬러 밸런스: 주조·보조·강조색 면적비 시뮬레이터
-            <span class="badge">6주차 / 13주차 실습</span>
-          </h1>
-          <p>K-Beauty Color Area Ratio Simulator for Makeup & Aesthetics Education</p>
-        </div>
+  <!-- =========================================================
+       HERO HEADER & ACTIONS
+       ========================================================= -->
+  <header class="hero-header">
+    <div class="header-container">
+      <div class="brand-wrap">
+        <div class="badge-kbeauty">K-BEAUTY SPECIAL LECTURE • WORK SHEET</div>
+        <h1 class="main-title">
+          Art Mask Design Brief: <span class="accent-italic">나의 첫 경진대회 시안 기획</span>
+        </h1>
+        <p class="sub-title">
+          뷰티미용전공 1학년을 위한 단계별 발상 캔버스 (주제 ➔ 감성 키워드 ➔ 색채 황금비 ➔ 조형요소)
+        </p>
       </div>
 
       <div class="header-actions">
-        <!-- 70:25:5 기본 황금비 리셋 -->
-        <button class="btn btn-sm" id="btnResetGolden" title="뷰티 배색의 기본인 70 : 25 : 5 비율로 초기화">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
-            <path d="M3 3v5h5"/>
+        <button type="button" class="btn btn-secondary" id="btnRandomInspire" title="창작이 막힐 때 누르면 영감 샘플이 자동 입력됩니다">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
           </svg>
-          기본 황금비 (70:25:5) 리셋
+          영감 프리셋
         </button>
 
-        <!-- 배색 리포트 복사 -->
-        <button class="btn btn-sm btn-primary" id="btnExportReport" title="현재 배색과 비율을 클립보드에 복사">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+        <button type="button" class="btn btn-secondary" id="btnCopyText" title="기획서 텍스트를 클립보드에 복사합니다">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
           </svg>
-          배색 코드 복사
+          기획 텍스트 복사
         </button>
 
-        <!-- 라이트/다크 테마 토글 -->
-        <button class="btn btn-sm" id="btnThemeToggle" aria-label="테마 변경">
-          <svg id="themeIcon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="5"/>
-            <line x1="12" y1="1" x2="12" y2="3"/>
-            <line x1="12" y1="21" x2="12" y2="23"/>
-            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
-            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-            <line x1="1" y1="12" x2="3" y2="12"/>
-            <line x1="21" y1="12" x2="23" y2="12"/>
-            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
-            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+        <button type="button" class="btn btn-secondary" id="btnPrintPdf" title="A4 인쇄 또는 PDF로 저장합니다">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 6 2 18 2 18 9"></polyline>
+            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+            <rect x="6" y="14" width="12" height="8"></rect>
           </svg>
+          인쇄 / PDF
+        </button>
+
+        <button type="button" class="btn btn-primary" id="btnExportImage" title="현재 시안 보드를 고화질 PNG 이미지로 저장합니다">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          시안 보드 이미지 저장
         </button>
       </div>
-    </header>
+    </div>
+  </header>
 
-    <!-- ====================================================================
-         메인 워크스페이스 그리드
-         ==================================================================== -->
-    <main class="workspace-grid">
+  <!-- Mobile / Tablet View Mode Switcher -->
+  <div class="view-toggle-bar">
+    <div class="view-toggle-inner">
+      <button type="button" class="toggle-btn active" id="tabStudio">1~3단계 기획 스튜디오</button>
+      <button type="button" class="toggle-btn" id="tabCanvas">실시간 시안 캔버스 미리보기</button>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       MAIN LAYOUT
+       ========================================================= -->
+  <main class="app-layout">
+
+    <!-- LEFT PANEL: 1~3단계 기획 스튜디오 -->
+    <section class="studio-panel" id="studioSection">
+
+      <!-- STEP 1: 주제 및 키워드 선정 -->
+      <article class="step-card" id="step1Card">
+        <div class="step-header">
+          <div class="step-number">1</div>
+          <div class="step-titles">
+            <div class="step-title-row">
+              <h2 class="step-title">주제 및 감성 키워드 선정</h2>
+            </div>
+            <p class="step-subtitle">대회의 주제를 나만의 시각으로 재해석하는 첫 번째 발상 단계</p>
+          </div>
+        </div>
+
+        <div class="step-tip">
+          <strong>기획 가이드 팁:</strong> 경진대회 심사위원은 '그림 실력' 이전에 작품의 <strong>명확한 콘셉트와 스토리텔링</strong>을 평가합니다. 소주제를 고른 후 핵심 감성 키워드를 선택하세요.
+        </div>
+
+        <!-- 공통 대주제 안내 -->
+        <div class="common-theme-banner">
+          <span class="common-theme-label">2026 경진대회 공통 대주제</span>
+          <span class="common-theme-val">「자연의 변주 (Variations of Nature)」</span>
+        </div>
+
+        <!-- 6가지 소주제 선택 버튼 -->
+        <div class="subtheme-grid" id="subthemeGrid">
+          <button type="button" class="subtheme-btn active" data-subtheme="Bloom" data-theme-kr="개화 / 꽃의 만개" data-icon="🌸">
+            <span class="subtheme-icon">🌸</span>
+            <span class="subtheme-name">Bloom</span>
+            <span class="subtheme-kr">꽃의 만개</span>
+          </button>
+          <button type="button" class="subtheme-btn" data-subtheme="Ocean" data-theme-kr="심해 / 파도의 유영" data-icon="🌊">
+            <span class="subtheme-icon">🌊</span>
+            <span class="subtheme-name">Ocean</span>
+            <span class="subtheme-kr">심해와 파도</span>
+          </button>
+          <button type="button" class="subtheme-btn" data-subtheme="Butterfly" data-theme-kr="나비 / 변태와 비상" data-icon="🦋">
+            <span class="subtheme-icon">🦋</span>
+            <span class="subtheme-name">Butterfly</span>
+            <span class="subtheme-kr">나비의 비상</span>
+          </button>
+          <button type="button" class="subtheme-btn" data-subtheme="Flame" data-theme-kr="불꽃 / 열정과 변형" data-icon="🔥">
+            <span class="subtheme-icon">🔥</span>
+            <span class="subtheme-name">Flame</span>
+            <span class="subtheme-kr">타오르는 열정</span>
+          </button>
+          <button type="button" class="subtheme-btn" data-subtheme="Moonlight" data-theme-kr="달빛 / 밤의 서정" data-icon="🌙">
+            <span class="subtheme-icon">🌙</span>
+            <span class="subtheme-name">Moonlight</span>
+            <span class="subtheme-kr">달빛과 서정</span>
+          </button>
+          <button type="button" class="subtheme-btn" data-subtheme="Forest" data-theme-kr="원시림 / 생명과 덩굴" data-icon="🌿">
+            <span class="subtheme-icon">🌿</span>
+            <span class="subtheme-name">Forest</span>
+            <span class="subtheme-kr">원시림과 덩굴</span>
+          </button>
+        </div>
+
+        <!-- 자동 추천 감성 키워드 3가지 -->
+        <div class="keyword-section">
+          <div class="keyword-section-title">
+            <span>추천 감성 키워드 (클릭하여 시안 보드에 반영)</span>
+            <span style="font-size: 0.7rem; color: var(--gold-primary);">최대 3개 이상 선택 가능</span>
+          </div>
+          <div class="keyword-chips" id="keywordChipsContainer">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </article>
+
+
+      <!-- STEP 2: 컬러 팔레트 기획 (60:30:10 법칙) -->
+      <article class="step-card" id="step2Card">
+        <div class="step-header">
+          <div class="step-number">2</div>
+          <div class="step-titles">
+            <div class="step-title-row">
+              <h2 class="step-title">컬러 팔레트 기획</h2>
+            </div>
+            <p class="step-subtitle">시각적 균형을 지키는 <strong>색채의 황금비율 (60:30:10)</strong> 공식</p>
+          </div>
+        </div>
+
+        <div class="step-tip">
+          <strong>기획 가이드 팁:</strong> 초보자가 가장 많이 하는 실수는 너무 많은 색을 난잡하게 쓰는 것입니다. <strong>주조색(60%)으로 바탕 톤을 잡고, 보조색(30%)으로 형상을 표현하며, 강조색(10%)으로 시선 집중 포인트</strong>를 찍으세요.
+        </div>
+
+        <!-- 3단계 컬러 피커 그룹 -->
+        <div class="color-picker-group">
+          <!-- 1. 주조색 -->
+          <div class="color-row-item">
+            <div class="color-meta">
+              <div class="color-role-badge">
+                <span style="color: var(--gold-primary);">● 주조색</span>
+                <span class="color-ratio">60%</span>
+              </div>
+              <div class="color-role-desc">마스크 바탕면 &amp; 배경 베이스</div>
+            </div>
+            <div class="color-input-wrap">
+              <div class="color-swatch-box" id="swatchBoxDominant">
+                <input type="color" id="pickerDominant" value="#F7D6D0" />
+                <div class="color-swatch-preview" id="previewDominant" style="background-color: #F7D6D0;"></div>
+              </div>
+              <input type="text" class="color-hex-input" id="hexDominant" value="#F7D6D0" maxlength="7" />
+            </div>
+            <div class="color-presets-row" id="presetsDominant">
+              <div class="preset-dot" style="background: #F7D6D0;" data-color="#F7D6D0" title="페일 피치"></div>
+              <div class="preset-dot" style="background: #1B263B;" data-color="#1B263B" title="미드나잇 네이비"></div>
+              <div class="preset-dot" style="background: #E8EDDF;" data-color="#E8EDDF" title="세이지 세라믹"></div>
+            </div>
+          </div>
+
+          <!-- 2. 보조색 -->
+          <div class="color-row-item">
+            <div class="color-meta">
+              <div class="color-role-badge">
+                <span style="color: #93c5fd;">● 보조색</span>
+                <span class="color-ratio">30%</span>
+              </div>
+              <div class="color-role-desc">눈매 음영 &amp; 메인 조형 패턴</div>
+            </div>
+            <div class="color-input-wrap">
+              <div class="color-swatch-box" id="swatchBoxSub">
+                <input type="color" id="pickerSub" value="#B23A48" />
+                <div class="color-swatch-preview" id="previewSub" style="background-color: #B23A48;"></div>
+              </div>
+              <input type="text" class="color-hex-input" id="hexSub" value="#B23A48" maxlength="7" />
+            </div>
+            <div class="color-presets-row" id="presetsSub">
+              <div class="preset-dot" style="background: #B23A48;" data-color="#B23A48" title="로즈 와인"></div>
+              <div class="preset-dot" style="background: #0077B6;" data-color="#0077B6" title="오션 마린"></div>
+              <div class="preset-dot" style="background: #2D6A4F;" data-color="#2D6A4F" title="딥 포레스트"></div>
+            </div>
+          </div>
+
+          <!-- 3. 강조색 -->
+          <div class="color-row-item">
+            <div class="color-meta">
+              <div class="color-role-badge">
+                <span style="color: #fca5a5;">● 강조색</span>
+                <span class="color-ratio">10%</span>
+              </div>
+              <div class="color-role-desc">그래픽 라인 &amp; 주얼리/스톤</div>
+            </div>
+            <div class="color-input-wrap">
+              <div class="color-swatch-box" id="swatchBoxAccent">
+                <input type="color" id="pickerAccent" value="#F9D024" />
+                <div class="color-swatch-preview" id="previewAccent" style="background-color: #F9D024;"></div>
+              </div>
+              <input type="text" class="color-hex-input" id="hexAccent" value="#F9D024" maxlength="7" />
+            </div>
+            <div class="color-presets-row" id="presetsAccent">
+              <div class="preset-dot" style="background: #F9D024;" data-color="#F9D024" title="스파클 골드"></div>
+              <div class="preset-dot" style="background: #06D6A0;" data-color="#06D6A0" title="네온 민트"></div>
+              <div class="preset-dot" style="background: #FF0054;" data-color="#FF0054" title="마젠타 플래시"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 실시간 색채 면적비 바 -->
+        <div class="ratio-visualizer">
+          <div class="ratio-visualizer-header">
+            <span>색채 면적 배분 시각화</span>
+            <span>주조(60%) : 보조(30%) : 강조(10%)</span>
+          </div>
+          <div class="ratio-bar">
+            <div class="ratio-segment ratio-seg-dominant" id="ratioBarDominant" style="background-color: #F7D6D0;" title="주조색 60%"></div>
+            <div class="ratio-segment ratio-seg-sub" id="ratioBarSub" style="background-color: #B23A48;" title="보조색 30%"></div>
+            <div class="ratio-segment ratio-seg-accent" id="ratioBarAccent" style="background-color: #F9D024;" title="강조색 10%"></div>
+          </div>
+        </div>
+      </article>
+
+
+      <!-- STEP 3: 모티브 및 조형요소 -->
+      <article class="step-card" id="step3Card">
+        <div class="step-header">
+          <div class="step-number">3</div>
+          <div class="step-titles">
+            <div class="step-title-row">
+              <h2 class="step-title">모티브 및 조형요소 메모</h2>
+            </div>
+            <p class="step-subtitle">평면 메이크업을 넘어 입체적인 3D 예술로 발전시키는 조형 기획</p>
+          </div>
+        </div>
+
+        <div class="step-tip">
+          <strong>기획 가이드 팁:</strong> 아트마스크는 얼굴 굴곡을 활용하는 조형 예술입니다. 어떤 선을 쓰고, 어떤 질감(매트 vs 글리터)을 주며, 어떤 오브제(깃털, 와이어, 비즈 등)를 붙일지 메모해두세요.
+        </div>
+
+        <div class="motif-input-group">
+          <!-- 1) 선과 형태 -->
+          <div class="motif-field-card">
+            <label class="motif-label" for="inputLineForm">
+              <span class="motif-icon">〰️</span>
+              <span>선과 형태 (Line &amp; Form)</span>
+            </label>
+            <p class="motif-desc">흐르는 유선형, 비대칭 아치, 날카로운 기하학 선 등 주된 라인 형태</p>
+            <input type="text" class="motif-input" id="inputLineForm" placeholder="예: 꽃잎을 형상화한 유려한 비대칭 곡선과 눈꼬리 아치" value="꽃잎을 형상화한 유려한 비대칭 곡선과 아치형 윙 라인" />
+            <div class="quick-tags-wrap">
+              <span class="quick-tag" data-target="inputLineForm">비대칭 유선형 곡선</span>
+              <span class="quick-tag" data-target="inputLineForm">날카로운 상승 직선</span>
+              <span class="quick-tag" data-target="inputLineForm">소용돌이 와류 라인</span>
+            </div>
+          </div>
+
+          <!-- 2) 질감 및 재질 -->
+          <div class="motif-field-card">
+            <label class="motif-label" for="inputTexture">
+              <span class="motif-icon">✨</span>
+              <span>질감 및 텍스처 (Texture &amp; Finish)</span>
+            </label>
+            <p class="motif-desc">벨벳 매트, 물빛 오팔 쉬머, 자개 파우더 등 표면 마감 대비감</p>
+            <input type="text" class="motif-input" id="inputTexture" placeholder="예: 매트한 도자기 피부 베이스 + 젖은 듯한 오팔 쉬머 글리터" value="벨벳 매트 스킨 베이스 위에 촉촉한 로즈 글리터 쉬머" />
+            <div class="quick-tags-wrap">
+              <span class="quick-tag" data-target="inputTexture">벨벳 매트 &amp; 쉬머 대비</span>
+              <span class="quick-tag" data-target="inputTexture">크랙 질감 &amp; 자개 가루</span>
+              <span class="quick-tag" data-target="inputTexture">유리알 고광택 에나멜</span>
+            </div>
+          </div>
+
+          <!-- 3) 오브제/장식 포인트 -->
+          <div class="motif-field-card">
+            <label class="motif-label" for="inputObject">
+              <span class="motif-icon">💎</span>
+              <span>오브제 &amp; 장식 포인트 (Object &amp; Accent)</span>
+            </label>
+            <p class="motif-desc">이마, 관자놀이, 볼 쪽에 들어갈 3D 비즈, 스톤, 와이어, 깃털 등</p>
+            <input type="text" class="motif-input" id="inputObject" placeholder="예: 오른쪽 관자놀이에 입체 꽃잎 오브제와 스와로브스키 비즈" value="이마 중앙의 입체 골드 꽃술 와이어와 눈꼬리 크리스탈 비즈" />
+            <div class="quick-tags-wrap">
+              <span class="quick-tag" data-target="inputObject">스와로브스키 크리스탈</span>
+              <span class="quick-tag" data-target="inputObject">3D 입체 와이어 아트</span>
+              <span class="quick-tag" data-target="inputObject">그라데이션 실크 깃털</span>
+            </div>
+          </div>
+        </div>
+      </article>
+
+    </section>
+
+
+    <!-- RIGHT PANEL: 실시간 시안 캔버스 & 디자인 보드 -->
+    <aside class="canvas-panel" id="canvasSection">
       
-      <!-- ================================================================
-           좌측 컬럼: 색상 선택기 & 역할 교체 & K-뷰티 프리셋
-           ================================================================ -->
-      <section class="panel left-panel">
-        
-        <div class="panel-header">
-          <div>
-            <h2 class="panel-title">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="13.5" cy="6.5" r=".5"/>
-                <circle cx="17.5" cy="10.5" r=".5"/>
-                <circle cx="8.5" cy="7.5" r=".5"/>
-                <circle cx="6.5" cy="12.5" r=".5"/>
-                <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/>
-              </svg>
-              뷰티 컬러 팔레트 선택
-            </h2>
-            <span class="panel-subtitle">주조색 · 보조색 · 강조색 3가지 핵심 컬러를 설정하세요</span>
+      <!-- Exportable Presentation Board -->
+      <div class="presentation-board" id="presentationBoard">
+
+        <!-- Board Top Meta Header -->
+        <div class="board-header">
+          <div class="board-title-group">
+            <div class="board-theme-badge">
+              <span id="boardThemeIcon">🌸</span>
+              <span id="boardThemeBadgeText">NATURAL VARIATIONS • BLOOM</span>
+            </div>
+            <input type="text" class="board-work-title-input" id="boardWorkTitle" value="화원(花園)의 변주 : 만개하는 생명력" placeholder="작품 제목을 입력하세요" />
+          </div>
+
+          <div class="board-author-box">
+            <div class="author-input-row">
+              <span>디자이너</span>
+              <input type="text" class="author-input" id="authorName" value="김민서" placeholder="학생 이름" />
+            </div>
+            <div class="author-input-row">
+              <span>소속/학번</span>
+              <input type="text" class="author-input" id="authorClass" value="뷰티미용학과 1학년 A반" placeholder="전공 / 학번" />
+            </div>
+            <div class="author-input-row">
+              <span>기획 일자</span>
+              <span id="boardDate" style="color: var(--text-muted); font-size: 0.74rem;">2026. 03. 15</span>
+            </div>
           </div>
         </div>
 
-        <!-- 3구 컬러 피커 카드 리스트 -->
-        <div class="color-slots-container">
+        <!-- Center Interactive Mask & Mini Moodboard Grid -->
+        <div class="board-body-grid">
           
-          <!-- 1. 주조색 (Dominant Color) -->
-          <div class="color-slot-card" id="slotCardDominant" style="--slot-color: var(--color-dominant);">
-            <div class="slot-meta">
-              <div class="slot-role-tag" style="color: var(--accent-brand);">
-                <span>① 주조색 (Dominant)</span>
-                <span class="role-ratio-badge" id="badgeRatioDominant">70%</span>
-              </div>
-              <div class="slot-name-korean">베이스 & 배경 톤</div>
-              <div class="slot-desc">피부 베이스, 전체 배경, 메인 의상 등 전체적인 톤의 분위기 결정</div>
-            </div>
-            <div class="slot-color-interactive">
-              <div class="color-picker-button-wrap" title="주조색 컬러 선택">
-                <input type="color" id="pickerDominant" value="#F6ECE3" />
-                <div class="color-preview-box" id="previewDominant" style="background-color: var(--color-dominant);"></div>
-              </div>
-              <div class="hex-input-wrap">
-                <label for="hexDominant">HEX</label>
-                <input type="text" class="hex-input" id="hexDominant" value="#F6ECE3" maxlength="7" />
-              </div>
-            </div>
-          </div>
+          <!-- 1. Interactive SVG Art Mask Stage -->
+          <div class="mask-stage" id="maskStage">
+            <div class="mask-ambient-glow" id="maskAmbientGlow"></div>
 
-          <!-- 2. 보조색 (Sub / Secondary Color) -->
-          <div class="color-slot-card" id="slotCardSub" style="--slot-color: var(--color-sub);">
-            <div class="slot-meta">
-              <div class="slot-role-tag" style="color: #60a5fa;">
-                <span>② 보조색 (Secondary)</span>
-                <span class="role-ratio-badge" id="badgeRatioSub">25%</span>
-              </div>
-              <div class="slot-name-korean">조화 & 음영 톤</div>
-              <div class="slot-desc">치크 블러셔, 아이홀 음영, 네일 서브 컬러 등 주조색을 부드럽게 보조</div>
-            </div>
-            <div class="slot-color-interactive">
-              <div class="color-picker-button-wrap" title="보조색 컬러 선택">
-                <input type="color" id="pickerSub" value="#E29578" />
-                <div class="color-preview-box" id="previewSub" style="background-color: var(--color-sub);"></div>
-              </div>
-              <div class="hex-input-wrap">
-                <label for="hexSub">HEX</label>
-                <input type="text" class="hex-input" id="hexSub" value="#E29578" maxlength="7" />
-              </div>
-            </div>
-          </div>
+            <!-- Stylized Art Mask SVG Illustration -->
+            <svg class="artmask-svg" viewBox="0 0 400 520" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <!-- Dynamic Gradients linked to user selected colors -->
+                <linearGradient id="gradMaskSkin" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" id="stopSkinLight" stop-color="#ffffff" stop-opacity="0.9" />
+                  <stop offset="65%" id="stopSkinMain" stop-color="#F7D6D0" stop-opacity="0.75" />
+                  <stop offset="100%" id="stopSkinShadow" stop-color="#F7D6D0" stop-opacity="0.4" />
+                </linearGradient>
 
-          <!-- 3. 강조색 (Accent Color) -->
-          <div class="color-slot-card" id="slotCardAccent" style="--slot-color: var(--color-accent);">
-            <div class="slot-meta">
-              <div class="slot-role-tag" style="color: #f87171;">
-                <span>③ 강조색 (Accent)</span>
-                <span class="role-ratio-badge" id="badgeRatioAccent">5%</span>
-              </div>
-              <div class="slot-name-korean">포인트 & 시선 집중</div>
-              <div class="slot-desc">립 포인트, 아이라이너, 글리터, 네일 파츠 등 강한 시선 유도</div>
-            </div>
-            <div class="slot-color-interactive">
-              <div class="color-picker-button-wrap" title="강조색 컬러 선택">
-                <input type="color" id="pickerAccent" value="#B53838" />
-                <div class="color-preview-box" id="previewAccent" style="background-color: var(--color-accent);"></div>
-              </div>
-              <div class="hex-input-wrap">
-                <label for="hexAccent">HEX</label>
-                <input type="text" class="hex-input" id="hexAccent" value="#B53838" maxlength="7" />
-              </div>
-            </div>
-          </div>
+                <linearGradient id="gradSubContour" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" id="stopSubLight" stop-color="#B23A48" stop-opacity="0.85" />
+                  <stop offset="100%" id="stopSubDark" stop-color="#7a1f2b" stop-opacity="0.95" />
+                </linearGradient>
 
-        </div>
+                <filter id="softGlow" x="-20%" y="-20%" width="140%" height="140%">
+                  <feGaussianBlur stdDeviation="6" result="blur" />
+                  <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                </filter>
+              </defs>
 
-        <!-- 핵심 교육 인터랙션: 색상 역할 순환 스왑 (Role Swap) -->
-        <div class="role-swap-toolbar">
-          <div class="role-swap-title">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="m16 3 4 4-4 4"/>
-              <path d="M20 7H4"/>
-              <path d="m8 21-4-4 4-4"/>
-              <path d="M4 17h16"/>
+              <!-- Mannequin Bust & Neck Support Base -->
+              <path d="M140 450 C140 430 155 390 165 375 L235 375 C245 390 260 430 260 450 C260 475 225 490 200 490 C175 490 140 475 140 450 Z" 
+                    fill="rgba(255, 255, 255, 0.05)" stroke="rgba(255, 255, 255, 0.12)" stroke-width="1.5" />
+              <path d="M165 375 L160 320 L240 320 L235 375 Z" 
+                    fill="rgba(255, 255, 255, 0.08)" stroke="rgba(255, 255, 255, 0.15)" stroke-width="1.2" />
+
+              <!-- Sculpted Art Mask Main Face Silhouette (Dominant Color Area) -->
+              <path id="maskFaceBase" class="svg-dominant" 
+                    d="M200 45 C120 45 90 90 90 180 C90 250 115 285 140 325 C160 355 180 375 200 375 C220 375 240 355 260 325 C285 285 310 250 310 180 C310 90 280 45 200 45 Z" 
+                    fill="url(#gradMaskSkin)" 
+                    stroke="rgba(255, 255, 255, 0.35)" 
+                    stroke-width="2" />
+
+              <!-- Temple / Jawline Contour Shadow Lines -->
+              <path d="M110 170 C105 240 130 290 155 330" stroke="rgba(255, 255, 255, 0.18)" stroke-width="1.5" stroke-dasharray="2 3" />
+              <path d="M290 170 C295 240 270 290 245 330" stroke="rgba(255, 255, 255, 0.18)" stroke-width="1.5" stroke-dasharray="2 3" />
+
+              <!-- Dynamic Sub-Theme Background Motif Graphic (Behind the Face on Mask edge) -->
+              <g id="dynamicThemeMotifGroup">
+                <!-- Dynamically swapped paths for Bloom / Ocean / Butterfly / Flame / Moonlight / Forest -->
+              </g>
+
+              <!-- Artistic Makeup Contour & Eye Shadow Layer (Sub Color Area: 30%) -->
+              <!-- Left Eye Dramatic Flow -->
+              <path id="maskEyeShadowLeft" class="svg-sub" 
+                    d="M130 185 C115 155 130 130 160 145 C175 152 185 170 175 190 C160 198 140 205 130 185 Z" 
+                    fill="url(#gradSubContour)" 
+                    opacity="0.85" />
+              <!-- Right Eye Graphic Wing Contour -->
+              <path id="maskEyeShadowRight" class="svg-sub" 
+                    d="M270 185 C285 155 270 130 240 145 C225 152 215 170 225 190 C240 198 260 205 270 185 Z" 
+                    fill="url(#gradSubContour)" 
+                    opacity="0.85" />
+              <!-- Cheekbone Blusher Flush -->
+              <ellipse id="maskCheekLeft" class="svg-sub" cx="140" cy="235" rx="22" ry="14" fill="#B23A48" opacity="0.35" />
+              <ellipse id="maskCheekRight" class="svg-sub" cx="260" cy="235" rx="22" ry="14" fill="#B23A48" opacity="0.35" />
+
+              <!-- Sculpted Facial Features (Eyes, Brows, Nose, Lips) -->
+              <!-- Stylized Eyebrows -->
+              <path d="M125 145 C145 132 170 136 182 148" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" />
+              <path d="M275 145 C255 132 230 136 218 148" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" />
+
+              <!-- Closed / Editorial Cat Eyes with Double Eyelash -->
+              <path d="M135 172 C148 184 168 182 178 170" stroke="#ffffff" stroke-width="2" stroke-linecap="round" fill="none" />
+              <path d="M265 172 C252 184 232 182 222 170" stroke="#ffffff" stroke-width="2" stroke-linecap="round" fill="none" />
+              
+              <!-- Delicate Nose Line & Bridge -->
+              <path d="M200 145 L200 240 C195 244 192 248 196 252 C200 254 204 254 208 250" 
+                    stroke="rgba(255, 255, 255, 0.6)" stroke-width="1.6" stroke-linecap="round" fill="none" />
+
+              <!-- Sculpted Lip Base -->
+              <path d="M182 290 C192 284 200 286 200 286 C200 286 208 284 218 290 C215 304 205 312 200 312 C195 312 185 304 182 290 Z" 
+                    fill="rgba(255, 255, 255, 0.25)" stroke="rgba(255, 255, 255, 0.5)" stroke-width="1.2" />
+              <!-- Lip Color Center Highlight (Sub Color) -->
+              <path id="maskLipAccent" class="svg-sub" 
+                    d="M185 292 C194 287 200 288 200 288 C200 288 206 287 215 292 C212 301 204 308 200 308 C196 308 188 301 185 292 Z" 
+                    fill="#B23A48" opacity="0.9" />
+
+              <!-- Accent Focal Points: Graphic Eyeliner Wings, Jewel Pearls & Crystals (Accent Color Area: 10%) -->
+              <!-- Left Graphic Wing -->
+              <path id="maskGraphicWingLeft" class="svg-accent" 
+                    d="M178 170 C195 162 210 135 220 115 C210 128 190 148 168 158" 
+                    stroke="#F9D024" stroke-width="2.5" stroke-linecap="round" fill="none" />
+              <!-- Right Graphic Wing / Filigree -->
+              <path id="maskGraphicWingRight" class="svg-accent" 
+                    d="M265 172 C285 160 305 135 320 100 C305 125 285 145 260 162" 
+                    stroke="#F9D024" stroke-width="2.5" stroke-linecap="round" fill="none" />
+
+              <!-- Third Eye / Forehead Crown Jewel Object (Accent Color) -->
+              <g id="foreheadJewelGroup">
+                <polygon id="maskJewelCenter" class="svg-accent" points="200,90 207,105 200,120 193,105" fill="#F9D024" stroke="#ffffff" stroke-width="1" />
+                <circle id="maskJewelDot1" class="svg-accent" cx="200" cy="80" r="3.5" fill="#F9D024" />
+                <circle id="maskJewelDot2" class="svg-accent" cx="200" cy="130" r="2.5" fill="#F9D024" />
+                <circle id="maskJewelDot3" class="svg-accent" cx="185" cy="105" r="2" fill="#F9D024" />
+                <circle id="maskJewelDot4" class="svg-accent" cx="215" cy="105" r="2" fill="#F9D024" />
+              </g>
+
+              <!-- Under-Eye Tear Gems / Crystal Drops (Accent Color) -->
+              <circle id="maskGemLeft" class="svg-accent" cx="155" cy="205" r="3" fill="#F9D024" stroke="#ffffff" stroke-width="0.8" />
+              <circle id="maskGemRight" class="svg-accent" cx="245" cy="205" r="3" fill="#F9D024" stroke="#ffffff" stroke-width="0.8" />
+
+              <!-- Chin / Jaw Focal Dot -->
+              <circle id="maskChinDot" class="svg-accent" cx="200" cy="350" r="2.5" fill="#F9D024" opacity="0.85" />
             </svg>
-            색상 역할 맞바꾸기 체험
-          </div>
-          <div class="swap-btn-group">
-            <button class="btn btn-sm" id="btnRotateRoles" title="주조색 → 보조색 → 강조색 순서로 색상을 한 칸씩 순환">
-              순환 회전 (Rotate)
-            </button>
-            <button class="btn btn-sm" id="btnSwapDomSub" title="주조색과 보조색 서로 맞교환">
-              주조 ⇄ 보조
-            </button>
-            <button class="btn btn-sm" id="btnSwapDomAcc" title="주조색과 강조색 서로 맞교환">
-              주조 ⇄ 강조
-            </button>
-          </div>
-        </div>
-
-        <!-- K-뷰티 트렌드 감성 배색 프리셋 컬렉션 -->
-        <div class="preset-section">
-          <div class="preset-header">
-            <span>K-뷰티 트렌드 감성 배색 프리셋</span>
-            <span style="font-size: 0.72rem; color: var(--text-muted);">클릭 시 즉시 적용</span>
           </div>
 
-          <div class="presets-grid" id="presetsGrid">
-            <!-- JS에서 동적 생성 또는 정적 선언 (아래 스크립트 연동) -->
-          </div>
-        </div>
-
-      </section>
-
-      <!-- ================================================================
-           우측 컬럼: 시각화 캔버스 (도넛 차트 / 추상 무드보드 / 페이스 뷰)
-           ================================================================ -->
-      <section class="panel canvas-panel">
-        
-        <div class="panel-header">
-          <div class="canvas-nav-tabs">
-            <button class="tab-btn active" data-target="view-moodboard">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect width="7" height="9" x="3" y="3" rx="1"/>
-                <rect width="7" height="5" x="14" y="3" rx="1"/>
-                <rect width="7" height="9" x="14" y="12" rx="1"/>
-                <rect width="7" height="5" x="3" y="16" rx="1"/>
-              </svg>
-              B 뷰: 추상 무드보드
-            </button>
-
-            <button class="tab-btn" data-target="view-donut">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10"/>
-                <circle cx="12" cy="12" r="4"/>
-              </svg>
-              A 뷰: 도넛 차트
-            </button>
-
-            <button class="tab-btn" data-target="view-beauty">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 2a8 8 0 0 0-8 8c0 5 8 12 8 12s8-7 8-12a8 8 0 0 0-8-8z"/>
-              </svg>
-              C 뷰: 페이스 & 네일
-            </button>
-
-            <button class="tab-btn" data-target="view-split">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect width="18" height="18" x="3" y="3" rx="2"/>
-                <line x1="12" y1="3" x2="12" y2="21"/>
-              </svg>
-              듀얼 분할 보기
-            </button>
-          </div>
-
-          <div style="font-size: 0.78rem; color: var(--text-muted); font-family: 'Montserrat', sans-serif;">
-            RATIO: <span id="headerRatioPreview" style="color: var(--accent-brand); font-weight: 700;">70 : 25 : 5</span>
-          </div>
-        </div>
-
-        <!-- 뷰 컨테이너 -->
-        <div class="view-content-container">
-          
-          <!-- ============================================================
-               B 뷰: 에디토리얼 추상 무드보드 레이아웃
-               ============================================================ -->
-          <div class="view-pane active" id="view-moodboard">
-            <div class="moodboard-stage" id="moodboardStage">
-              
-              <div class="moodboard-bg-watermark">K-BEAUTY RATIO</div>
-              
-              <!-- 주조색 캔버스 안내 배지 -->
-              <div class="dominant-canvas-badge">
-                <span class="dot"></span>
-                <span>주조색 캔버스 (DOMINANT): <strong id="mbDominantPct">70%</strong></span>
-              </div>
-
-              <!-- 보조색 가변 블록 -->
-              <div class="moodboard-sub-block" id="mbSubBlock" style="width: 48%; height: 80%;">
-                <div class="sub-block-badge">
-                  <span>보조색 영역 (SECONDARY)</span>
-                </div>
-                <div>
-                  <div class="sub-block-title" id="mbSubTitle">Sub Mood 25%</div>
-                  <div style="font-size: 0.76rem; color: rgba(255,255,255,0.8); margin-top: 4px;">
-                    메이크업 섀도우 & 치크 톤 밸런스
-                  </div>
-                </div>
-              </div>
-
-              <!-- 강조색 가변 포인트 엘리먼트 -->
-              <div class="moodboard-accent-element" id="mbAccentElement" style="width: 140px; height: 140px;">
-                <span class="accent-element-pill">ACCENT POINT</span>
-                <div class="accent-element-value" id="mbAccentValue">5%</div>
-                <div style="font-size: 0.68rem; color: #ffffff; opacity: 0.9;">시선 포커스</div>
-              </div>
-
-              <!-- 강조색 기하학적 스트라이프 바 -->
-              <div class="floating-stripe" id="mbStripe" style="width: 35%;"></div>
-
-            </div>
-          </div>
-
-          <!-- ============================================================
-               A 뷰: SVG 정밀 도넛 차트
-               ============================================================ -->
-          <div class="view-pane" id="view-donut">
-            <div class="donut-view-wrap">
-              <div class="donut-chart-stage">
-                <svg class="donut-svg" viewBox="0 0 200 200">
-                  <!-- 배경 트랙 원 -->
-                  <circle cx="100" cy="100" r="75" stroke="rgba(255,255,255,0.05)" stroke-width="32" fill="none" />
-                  <!-- 3개 섹터 (stroke-dasharray로 동적 제어) -->
-                  <circle id="donutSectorDominant" class="donut-slice" cx="100" cy="100" r="75" stroke="var(--color-dominant)" stroke-dasharray="329.8 471.2" stroke-dashoffset="0" />
-                  <circle id="donutSectorSub" class="donut-slice" cx="100" cy="100" r="75" stroke="var(--color-sub)" stroke-dasharray="117.8 471.2" stroke-dashoffset="-329.8" />
-                  <circle id="donutSectorAccent" class="donut-slice" cx="100" cy="100" r="75" stroke="var(--color-accent)" stroke-dasharray="23.5 471.2" stroke-dashoffset="-447.6" />
+          <!-- 2. Mini Moodboard & Keyword Cloud -->
+          <div class="mini-moodboard">
+            
+            <!-- Color Swatches Card -->
+            <div class="moodboard-card">
+              <div class="moodboard-card-title">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <circle cx="12" cy="12" r="4"></circle>
                 </svg>
-
-                <!-- 도넛 중앙 뱃지 -->
-                <div class="donut-center-badge">
-                  <div class="center-ratio-formula" id="centerFormula">70 : 25 : 5</div>
-                  <div class="center-label">황금 밸런스</div>
-                  <div class="center-concept-chip" id="centerConcept">안정적 클래식</div>
-                </div>
+                <span>COLOR PALETTE RATIO (60:30:10)</span>
               </div>
-
-              <!-- 도넛 차트 하단 레전드 카드 -->
-              <div class="donut-legend-cards">
-                <div class="donut-legend-card">
-                  <div class="legend-color-dot" style="background-color: var(--color-dominant);"></div>
-                  <div class="legend-text-col">
-                    <span class="legend-title">주조색 (Dominant)</span>
-                    <span class="legend-pct" id="legendPctDominant">70%</span>
-                  </div>
+              <div class="swatches-display">
+                <!-- Dominant -->
+                <div class="board-swatch-item">
+                  <div class="board-swatch-circle" id="boardSwatchDominant" style="background-color: #F7D6D0;"></div>
+                  <span class="board-swatch-name">주조색</span>
+                  <span class="board-swatch-hex" id="boardHexDominant">#F7D6D0</span>
+                  <span class="board-swatch-ratio">60%</span>
                 </div>
-
-                <div class="donut-legend-card">
-                  <div class="legend-color-dot" style="background-color: var(--color-sub);"></div>
-                  <div class="legend-text-col">
-                    <span class="legend-title">보조색 (Secondary)</span>
-                    <span class="legend-pct" id="legendPctSub">25%</span>
-                  </div>
+                <!-- Sub -->
+                <div class="board-swatch-item">
+                  <div class="board-swatch-circle" id="boardSwatchSub" style="background-color: #B23A48;"></div>
+                  <span class="board-swatch-name">보조색</span>
+                  <span class="board-swatch-hex" id="boardHexSub">#B23A48</span>
+                  <span class="board-swatch-ratio">30%</span>
                 </div>
-
-                <div class="donut-legend-card">
-                  <div class="legend-color-dot" style="background-color: var(--color-accent);"></div>
-                  <div class="legend-text-col">
-                    <span class="legend-title">강조색 (Accent)</span>
-                    <span class="legend-pct" id="legendPctAccent">5%</span>
-                  </div>
+                <!-- Accent -->
+                <div class="board-swatch-item">
+                  <div class="board-swatch-circle" id="boardSwatchAccent" style="background-color: #F9D024;"></div>
+                  <span class="board-swatch-name">강조색</span>
+                  <span class="board-swatch-hex" id="boardHexAccent">#F9D024</span>
+                  <span class="board-swatch-ratio">10%</span>
                 </div>
               </div>
             </div>
-          </div>
 
-          <!-- ============================================================
-               C 뷰: 뷰티 페이스 & 네일 그래픽 시뮬레이션
-               ============================================================ -->
-          <div class="view-pane" id="view-beauty">
-            <div class="beauty-face-view-wrap">
-              
-              <!-- 좌측: 페이스 메이크업 실루엣 -->
-              <div class="beauty-visual-box">
-                <div class="visual-box-tag">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="10"/>
-                  </svg>
-                  Face Makeup Simulation
-                </div>
-
-                <div class="face-svg-wrap">
-                  <svg class="face-svg" viewBox="0 0 200 260" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <!-- 목 및 어깨 (주조색 바탕) -->
-                    <path d="M75 220 L75 260 L125 260 L125 220 Z" fill="var(--color-dominant)" opacity="0.9" />
-                    <!-- 얼굴 외곽 실루엣 (주조색: 피부 베이스) -->
-                    <path d="M50 80 C50 30 150 30 150 80 C150 145 135 210 100 220 C65 210 50 145 50 80 Z" fill="var(--color-dominant)" stroke="rgba(0,0,0,0.15)" stroke-width="2" />
-                    
-                    <!-- 헤어 라인 실루엣 (세련된 음영) -->
-                    <path d="M48 90 C45 40 70 20 100 20 C130 20 155 40 152 90 C140 50 120 45 100 45 C80 45 60 50 48 90 Z" fill="rgba(0,0,0,0.25)" />
-
-                    <!-- 양 볼 치크 블러셔 (보조색: 부드러운 그러데이션 블러) -->
-                    <ellipse cx="72" cy="140" rx="18" ry="12" fill="var(--color-sub)" opacity="0.65" filter="blur(4px)" />
-                    <ellipse cx="128" cy="140" rx="18" ry="12" fill="var(--color-sub)" opacity="0.65" filter="blur(4px)" />
-
-                    <!-- 아이홀 섀도우 (보조색) -->
-                    <path d="M66 106 Q78 98 90 106 Q78 103 66 106 Z" fill="var(--color-sub)" opacity="0.8" />
-                    <path d="M110 106 Q122 98 134 106 Q122 103 110 106 Z" fill="var(--color-sub)" opacity="0.8" />
-
-                    <!-- 눈썹 & 아이라인 라인 드로잉 -->
-                    <path d="M64 96 Q77 92 88 96" stroke="rgba(0,0,0,0.7)" stroke-width="2.5" stroke-linecap="round" />
-                    <path d="M112 96 Q123 92 136 96" stroke="rgba(0,0,0,0.7)" stroke-width="2.5" stroke-linecap="round" />
-                    <path d="M68 108 Q78 104 88 108" stroke="rgba(0,0,0,0.85)" stroke-width="2" stroke-linecap="round" />
-                    <path d="M112 108 Q122 104 132 108" stroke="rgba(0,0,0,0.85)" stroke-width="2" stroke-linecap="round" />
-
-                    <!-- 코 섀도우 & 노즈 브릿지 -->
-                    <path d="M98 118 L96 148 Q100 152 104 148" stroke="rgba(0,0,0,0.3)" stroke-width="1.8" stroke-linecap="round" />
-
-                    <!-- 립 포인트 (강조색: 선명한 시선 집중) -->
-                    <path d="M82 176 Q100 166 118 176 Q100 192 82 176 Z" fill="var(--color-accent)" stroke="rgba(0,0,0,0.2)" stroke-width="1" />
-                    <!-- 립 하이라이트 글리터 -->
-                    <ellipse cx="96" cy="174" rx="4" ry="1.5" fill="#ffffff" opacity="0.65" />
-                  </svg>
-                </div>
-                <div style="font-size: 0.74rem; color: var(--text-muted); margin-top: 10px;">
-                  피부 베이스(주조) · 치크&섀도우(보조) · 립 포인트(강조)
-                </div>
+            <!-- Selected Keywords Card -->
+            <div class="moodboard-card">
+              <div class="moodboard-card-title">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+                  <line x1="7" y1="7" x2="7.01" y2="7"></line>
+                </svg>
+                <span>CONCEPT KEYWORDS</span>
               </div>
-
-              <!-- 우측: 네일 아트 팁 5개 밸런스 -->
-              <div class="beauty-visual-box">
-                <div class="visual-box-tag">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
-                    <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
-                  </svg>
-                  Nail Art 5-Tip Balance
-                </div>
-
-                <div class="nails-display-wrap">
-                  <div class="nail-finger">
-                    <div class="nail-tip nail-tip-1" title="엄지: 주조색"></div>
-                    <span class="nail-role-label">엄지</span>
-                  </div>
-                  <div class="nail-finger">
-                    <div class="nail-tip nail-tip-2" title="검지: 보조색"></div>
-                    <span class="nail-role-label">검지</span>
-                  </div>
-                  <div class="nail-finger">
-                    <div class="nail-tip nail-tip-3" title="중지: 주조색"></div>
-                    <span class="nail-role-label">중지</span>
-                  </div>
-                  <div class="nail-finger">
-                    <div class="nail-tip nail-tip-4" title="약지: 강조색 (풀코트/파츠)"></div>
-                    <span class="nail-role-label">약지★</span>
-                  </div>
-                  <div class="nail-finger">
-                    <div class="nail-tip nail-tip-5" title="소지: 보조색"></div>
-                    <span class="nail-role-label">소지</span>
-                  </div>
-                </div>
-
-                <div style="font-size: 0.74rem; color: var(--text-muted); margin-top: 24px; text-align: center;">
-                  약지(Ring Finger)에 5% 강조색을 포인트 배치한 네일 살롱 정석 배색
-                </div>
+              <div class="board-keywords-wrap" id="boardKeywordsList">
+                <span class="board-keyword-tag">#유기적곡선</span>
+                <span class="board-keyword-tag">#화려한그라데이션</span>
+                <span class="board-keyword-tag">#꽃잎질감</span>
               </div>
-
             </div>
-          </div>
 
-          <!-- ============================================================
-               D 뷰: 듀얼 분할 모드 (도넛 + 무드보드)
-               ============================================================ -->
-          <div class="view-pane" id="view-split">
-            <div class="split-view-wrap">
-              
-              <!-- 좌측: 도넛 미니 -->
-              <div style="background: var(--bg-card); border-radius: var(--radius-lg); border: 1px solid var(--border-color); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px;">
-                <div style="width: 220px; height: 220px; position: relative;">
-                  <svg class="donut-svg" viewBox="0 0 200 200" style="width:100%; height:100%;">
-                    <circle cx="100" cy="100" r="75" stroke="rgba(255,255,255,0.05)" stroke-width="32" fill="none" />
-                    <circle id="splitDonutDom" class="donut-slice" cx="100" cy="100" r="75" stroke="var(--color-dominant)" />
-                    <circle id="splitDonutSub" class="donut-slice" cx="100" cy="100" r="75" stroke="var(--color-sub)" />
-                    <circle id="splitDonutAcc" class="donut-slice" cx="100" cy="100" r="75" stroke="var(--color-accent)" />
-                  </svg>
-                  <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: 'Montserrat'; font-weight: 700; font-size: 1.05rem;" id="splitFormula">
-                    70:25:5
-                  </div>
-                </div>
-                <div style="margin-top: 14px; font-size: 0.8rem; color: var(--text-secondary);">정량적 도넛 차트</div>
+            <!-- Contest Evaluation Index -->
+            <div class="moodboard-card">
+              <div class="moodboard-card-title">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                </svg>
+                <span>CONTEST DESIGN CRITERIA</span>
               </div>
-
-              <!-- 우측: 무드보드 미니 -->
-              <div style="background-color: var(--color-dominant); border-radius: var(--radius-lg); border: 1px solid var(--border-color); position: relative; overflow: hidden; padding: 20px; display: flex; align-items: center; justify-content: center;">
-                <div id="splitSubBlock" style="background-color: var(--color-sub); width: 50%; height: 60%; border-radius: var(--radius-md); box-shadow: 0 10px 25px rgba(0,0,0,0.3); padding: 14px; color: #fff; font-size: 0.8rem; font-weight: 700; transition: all 0.3s ease;">
-                  SUB <span id="splitSubVal">25%</span>
+              <div style="display: flex; flex-direction: column; gap: 6px; font-size: 0.72rem; color: var(--text-muted);">
+                <div style="display: flex; justify-content: space-between;">
+                  <span>스토리텔링 적합도</span>
+                  <span style="color: var(--gold-primary); font-weight: 600;">EXCELLENT ★★★★★</span>
                 </div>
-                <div id="splitAccBlock" style="position: absolute; right: 24px; top: 40px; background-color: var(--color-accent); width: 60px; height: 60px; border-radius: 50%; box-shadow: 0 8px 20px rgba(0,0,0,0.35); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 0.75rem; font-weight: 800; transition: all 0.3s ease;">
-                  <span id="splitAccVal">5%</span>
+                <div style="display: flex; justify-content: space-between;">
+                  <span>색채 대비 및 조화도</span>
+                  <span style="color: #6ee7b7; font-weight: 600;">BALANCED (60:30:10)</span>
                 </div>
-                <div style="position: absolute; bottom: 12px; left: 16px; font-size: 0.72rem; background: rgba(0,0,0,0.5); padding: 2px 8px; border-radius: 4px; color: #fff;">
-                  공간적 면적 체감
+                <div style="display: flex; justify-content: space-between;">
+                  <span>3D 조형 차별성</span>
+                  <span style="color: #93c5fd; font-weight: 600;">HIGH CREATIVITY</span>
                 </div>
               </div>
-
             </div>
-          </div>
 
+          </div>
         </div>
 
-      </section>
-
-    </main>
-
-    <!-- ====================================================================
-         하단 컨트롤러: 3색 면적비 연동 슬라이더 & 황금비율 프리셋
-         ==================================================================== -->
-    <section class="ratio-controller-section">
-      <div class="ratio-controller-header">
-        <div>
-          <h3 style="font-size: 1rem; font-weight: 700; display: flex; align-items: center; gap: 8px;">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="4" y1="21" x2="4" y2="14"/>
-              <line x1="4" y1="10" x2="4" y2="3"/>
-              <line x1="12" y1="21" x2="12" y2="12"/>
-              <line x1="12" y1="8" x2="12" y2="3"/>
-              <line x1="20" y1="21" x2="20" y2="16"/>
-              <line x1="20" y1="12" x2="20" y2="3"/>
-              <line x1="1" y1="14" x2="7" y2="14"/>
-              <line x1="9" y1="8" x2="15" y2="8"/>
-              <line x1="17" y1="16" x2="23" y2="16"/>
-            </svg>
-            면적비 조절 컨트롤러 (총합 100% 자동 연동)
-          </h3>
-          <p style="font-size: 0.76rem; color: var(--text-muted); margin-top: 2px;">
-            슬라이더를 움직이면 나머지 두 색상이 상대 비율에 맞춰 자동으로 보정됩니다. 특정 비율을 고정하려면 자물쇠 아이콘을 클릭하세요.
-          </p>
+        <!-- 3. Form Elements Summary Brief -->
+        <div class="board-form-summary">
+          <div class="form-summary-item">
+            <div class="form-summary-label">01. 선과 형태 (Line &amp; Form)</div>
+            <div class="form-summary-value" id="boardSummaryLine">꽃잎을 형상화한 유려한 비대칭 곡선과 아치형 윙 라인</div>
+          </div>
+          <div class="form-summary-item">
+            <div class="form-summary-label">02. 질감 및 마감 (Texture)</div>
+            <div class="form-summary-value" id="boardSummaryTexture">벨벳 매트 스킨 베이스 위에 촉촉한 로즈 글리터 쉬머</div>
+          </div>
+          <div class="form-summary-item">
+            <div class="form-summary-label">03. 오브제 포인트 (Object)</div>
+            <div class="form-summary-value" id="boardSummaryObject">이마 중앙의 입체 골드 꽃술 와이어와 눈꼬리 크리스탈 비즈</div>
+          </div>
         </div>
 
-        <!-- 황금비율 퀵 프리셋 칩 -->
-        <div class="ratio-preset-chips">
-          <span style="font-size: 0.74rem; color: var(--text-muted); margin-right: 4px;">추천 비율:</span>
-          <button class="chip-btn active" data-r-dom="70" data-r-sub="25" data-r-acc="5">70 : 25 : 5 (기본 황금비)</button>
-          <button class="chip-btn" data-r-dom="60" data-r-sub="30" data-r-acc="10">60 : 30 : 10 (균형 조화)</button>
-          <button class="chip-btn" data-r-dom="50" data-r-sub="35" data-r-acc="15">50 : 35 : 15 (트렌디 대비)</button>
-          <button class="chip-btn" data-r-dom="40" data-r-sub="40" data-r-acc="20">40 : 40 : 20 (볼드 아티스틱)</button>
-        </div>
-      </div>
-
-      <!-- 3구 슬라이더 행 -->
-      <div class="sliders-group">
-        
-        <!-- 1. 주조색 슬라이더 -->
-        <div class="slider-row">
-          <div class="slider-label-block">
-            <span class="slider-role-name">
-              <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--color-dominant);"></span>
-              주조색
-            </span>
-            <span class="slider-role-sub">배경/바탕 (권장 60~70%)</span>
+        <!-- Board Bottom Watermark & Verification -->
+        <div class="board-footer">
+          <div class="golden-ratio-check">
+            K-Beauty Makeup Artist Golden Ratio Standard Applied
           </div>
-          <div class="range-slider-wrap">
-            <input type="range" class="custom-range" id="sliderDominant" min="1" max="98" value="70" style="--thumb-color: var(--color-dominant);" />
+          <div>
+            Art Mask Competition Design Board Specification v1.0
           </div>
-          <div class="slider-value-display" id="valDisplayDominant">70%</div>
-          <button class="lock-toggle-btn" id="lockDominant" title="주조색 비율 고정">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-            </svg>
-          </button>
-        </div>
-
-        <!-- 2. 보조색 슬라이더 -->
-        <div class="slider-row">
-          <div class="slider-label-block">
-            <span class="slider-role-name">
-              <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--color-sub);"></span>
-              보조색
-            </span>
-            <span class="slider-role-sub">조화/음영 (권장 20~30%)</span>
-          </div>
-          <div class="range-slider-wrap">
-            <input type="range" class="custom-range" id="sliderSub" min="1" max="98" value="25" style="--thumb-color: var(--color-sub);" />
-          </div>
-          <div class="slider-value-display" id="valDisplaySub">25%</div>
-          <button class="lock-toggle-btn" id="lockSub" title="보조색 비율 고정">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-            </svg>
-          </button>
-        </div>
-
-        <!-- 3. 강조색 슬라이더 -->
-        <div class="slider-row">
-          <div class="slider-label-block">
-            <span class="slider-role-name">
-              <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--color-accent);"></span>
-              강조색
-            </span>
-            <span class="slider-role-sub">포인트 (권장 5~10%)</span>
-          </div>
-          <div class="range-slider-wrap">
-            <input type="range" class="custom-range" id="sliderAccent" min="1" max="98" value="5" style="--thumb-color: var(--color-accent);" />
-          </div>
-          <div class="slider-value-display" id="valDisplayAccent">5%</div>
-          <button class="lock-toggle-btn" id="lockAccent" title="강조색 비율 고정">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-            </svg>
-          </button>
         </div>
 
       </div>
 
-      <!-- 100% 통합 스택 프로그레스 바 -->
-      <div class="ratio-stacked-bar-wrap">
-        <div class="ratio-stacked-bar">
-          <div class="bar-segment bar-segment-dominant" id="barDom"></div>
-          <div class="bar-segment bar-segment-sub" id="barSub"></div>
-          <div class="bar-segment bar-segment-accent" id="barAcc"></div>
-        </div>
-        <div class="ratio-bar-legend">
-          <span id="legendBarDom">주조: 70%</span>
-          <span id="legendBarSub">보조: 25%</span>
-          <span id="legendBarAcc">강조: 5%</span>
-          <span style="color: var(--text-primary);">합계: 100%</span>
-        </div>
-      </div>
-    </section>
+    </aside>
 
-    <!-- ====================================================================
-         하단 학습 카드: 색채학 분석 & 조화도 가이드
-         ==================================================================== -->
-    <section class="education-insight-card">
-      <div class="insight-text-group">
-        <h3>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
-            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
-          </svg>
-          색채학 교수자 코멘터리 (면적비와 시각 심리)
-        </h3>
-        <p class="insight-desc" id="insightCommentary">
-          현재 설정된 <strong>70 : 25 : 5</strong> 비율은 뷰티 메이크업 및 토털 스타일링에서 가장 시각적 피로도가 적고 안정감을 주는 정석 황금비입니다. 주조색이 부드럽게 바탕을 받쳐주고, 보조색이 입체감을 부여하며, 단 5%의 강조색이 전체 룩의 엣지를 완성합니다.
-        </p>
-        <div class="insight-tags" id="insightTags">
-          <span class="insight-pill">안정적 밸런스</span>
-          <span class="insight-pill">내추럴 데일리 룩</span>
-          <span class="insight-pill">피로도 최소화 배색</span>
-        </div>
-      </div>
+  </main>
 
-      <!-- 색채 대비 및 특성 계측기 -->
-      <div class="contrast-meter-box">
-        <div class="meter-row">
-          <span class="meter-label">주조-강조 명도 대비 (Contrast)</span>
-          <span class="meter-val" id="meterContrastVal">높음 (High)</span>
-        </div>
-        <div class="meter-bar">
-          <div class="meter-fill" id="fillContrast" style="width: 78%;"></div>
-        </div>
-
-        <div class="meter-row" style="margin-top: 4px;">
-          <span class="meter-label">강조색 시선 집중도 (Visual Impact)</span>
-          <span class="meter-val" id="meterImpactVal">임팩트 극대화</span>
-        </div>
-        <div class="meter-bar">
-          <div class="meter-fill" id="fillImpact" style="width: 90%; background: #f87171;"></div>
-        </div>
-      </div>
-    </section>
-
+  <!-- Toast Notification Feedback -->
+  <div class="toast-msg" id="toastMsg">
+    <span id="toastIcon">✨</span>
+    <span id="toastContent">메시지가 표시됩니다</span>
   </div>
 
-  <!-- 토스트 알림 컴포넌트 -->
-  <div class="toast-notice" id="toastNotice">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <polyline points="20 6 9 17 4 12"/>
-    </svg>
-    <span id="toastMsg">배색 정보가 클립보드에 복사되었습니다!</span>
-  </div>
 
-  <!-- ====================================================================
-       JavaScript 로직 (상태 관리, 100% 정규화 슬라이더, 차트 및 비주얼 동기화)
-       ==================================================================== -->
+  <!-- =========================================================
+       JAVASCRIPT: INTERACTION & LOGIC
+       ========================================================= -->
   <script>
     (function() {
       'use strict';
 
-      /* ------------------------------------------------------------------
-         1. K-뷰티 감성 프리셋 데이터
-         ------------------------------------------------------------------ */
-      const PRESETS = [
-        {
-          name: "웜 뮤트 코랄",
-          tone: "Spring Light / Warm Mute",
-          desc: "화사하고 생기 있는 봄 웜톤 데일리 메이크업",
-          colors: { dominant: "#FAF2EB", sub: "#FFA07A", accent: "#E63946" },
-          ratio: { dominant: 70, sub: 25, accent: 5 }
-        },
-        {
-          name: "쿨 썸머 베리",
-          tone: "Summer Mute / Cool Lavender",
-          desc: "청초하고 차분한 소프트 쿨톤 로즈베리 룩",
-          colors: { dominant: "#F0EDF5", sub: "#C78BA1", accent: "#6A244D" },
-          ratio: { dominant: 70, sub: 25, accent: 5 }
-        },
-        {
-          name: "어텀 웜 우드",
-          tone: "Autumn Deep / Warm Brick",
-          desc: "그윽하고 고혹적인 가을 웜톤 시나몬 브라운",
-          colors: { dominant: "#EBE3D5", sub: "#A76D42", accent: "#4A1A12" },
-          ratio: { dominant: 70, sub: 25, accent: 5 }
-        },
-        {
-          name: "윈터 쿨 시크",
-          tone: "Winter Vivid / High Contrast",
-          desc: "도회적이고 선명한 겨울 쿨톤 마젠타 포인트",
-          colors: { dominant: "#F4F6F9", sub: "#2F3B4C", accent: "#D80064" },
-          ratio: { dominant: 60, sub: 30, accent: 10 }
-        },
-        {
-          name: "클린 누디 모던",
-          tone: "Neutral Modern / Minimalist",
-          desc: "세련된 청담 아틀리에 베이지 토프 에스프레소",
-          colors: { dominant: "#EAE5DF", sub: "#9C8D81", accent: "#1A1918" },
-          ratio: { dominant: 70, sub: 25, accent: 5 }
-        },
-        {
-          name: "Y2K 글리츠 팝",
-          tone: "Kitsch Pastel / Trendy Contrast",
-          desc: "통통 튀는 Z세대 페일 라일락 & 네온 라임",
-          colors: { dominant: "#E7F0FD", sub: "#D19DE8", accent: "#B2FF00" },
-          ratio: { dominant: 50, sub: 35, accent: 15 }
-        }
-      ];
-
-      /* ------------------------------------------------------------------
-         2. 애플리케이션 상태 (State)
-         ------------------------------------------------------------------ */
-      const state = {
-        colors: {
-          dominant: "#F6ECE3",
-          sub: "#E29578",
-          accent: "#B53838"
-        },
-        ratios: {
-          dominant: 70,
-          sub: 25,
-          accent: 5
-        },
-        locked: {
-          dominant: false,
-          sub: false,
-          accent: false
-        },
-        activeView: "view-moodboard",
-        theme: "dark"
-      };
-
-      /* ------------------------------------------------------------------
-         3. DOM 엘리먼트 캐싱
-         ------------------------------------------------------------------ */
-      const els = {
-        // Root & Glow
-        root: document.documentElement,
-        body: document.body,
-        glow1: document.getElementById("glow1"),
-        glow2: document.getElementById("glow2"),
-        glow3: document.getElementById("glow3"),
-        brandLogoIcon: document.getElementById("brandLogoIcon"),
-
-        // Pickers & Hex Inputs
-        pickerDom: document.getElementById("pickerDominant"),
-        pickerSub: document.getElementById("pickerSub"),
-        pickerAcc: document.getElementById("pickerAccent"),
-        previewDom: document.getElementById("previewDominant"),
-        previewSub: document.getElementById("previewSub"),
-        previewAcc: document.getElementById("previewAccent"),
-        hexDom: document.getElementById("hexDominant"),
-        hexSub: document.getElementById("hexSub"),
-        hexAcc: document.getElementById("hexAccent"),
-
-        // Badges
-        badgeRatioDom: document.getElementById("badgeRatioDominant"),
-        badgeRatioSub: document.getElementById("badgeRatioSub"),
-        badgeRatioAcc: document.getElementById("badgeRatioAccent"),
-
-        // Sliders & Displays
-        sliderDom: document.getElementById("sliderDominant"),
-        sliderSub: document.getElementById("sliderSub"),
-        sliderAcc: document.getElementById("sliderAccent"),
-        valDisplayDom: document.getElementById("valDisplayDominant"),
-        valDisplaySub: document.getElementById("valDisplaySub"),
-        valDisplayAcc: document.getElementById("valDisplayAccent"),
-        
-        // Locks
-        lockDom: document.getElementById("lockDominant"),
-        lockSub: document.getElementById("lockSub"),
-        lockAcc: document.getElementById("lockAccent"),
-
-        // Stacked Bar
-        barDom: document.getElementById("barDom"),
-        barSub: document.getElementById("barSub"),
-        barAcc: document.getElementById("barAcc"),
-        legendBarDom: document.getElementById("legendBarDom"),
-        legendBarSub: document.getElementById("legendBarSub"),
-        legendBarAcc: document.getElementById("legendBarAcc"),
-        headerRatioPreview: document.getElementById("headerRatioPreview"),
-
-        // Swaps & Actions
-        btnRotateRoles: document.getElementById("btnRotateRoles"),
-        btnSwapDomSub: document.getElementById("btnSwapDomSub"),
-        btnSwapDomAcc: document.getElementById("btnSwapDomAcc"),
-        btnResetGolden: document.getElementById("btnResetGolden"),
-        btnExportReport: document.getElementById("btnExportReport"),
-        btnThemeToggle: document.getElementById("btnThemeToggle"),
-        themeIcon: document.getElementById("themeIcon"),
-        presetsGrid: document.getElementById("presetsGrid"),
-
-        // Tabs & Views
-        tabs: document.querySelectorAll(".tab-btn"),
-        viewPanes: document.querySelectorAll(".view-pane"),
-
-        // Donut Chart Elements
-        donutSectorDom: document.getElementById("donutSectorDominant"),
-        donutSectorSub: document.getElementById("donutSectorSub"),
-        donutSectorAcc: document.getElementById("donutSectorAccent"),
-        centerFormula: document.getElementById("centerFormula"),
-        centerConcept: document.getElementById("centerConcept"),
-        legendPctDom: document.getElementById("legendPctDominant"),
-        legendPctSub: document.getElementById("legendPctSub"),
-        legendPctAcc: document.getElementById("legendPctAccent"),
-
-        // Moodboard Elements
-        moodboardStage: document.getElementById("moodboardStage"),
-        mbDominantPct: document.getElementById("mbDominantPct"),
-        mbSubBlock: document.getElementById("mbSubBlock"),
-        mbSubTitle: document.getElementById("mbSubTitle"),
-        mbAccentElement: document.getElementById("mbAccentElement"),
-        mbAccentValue: document.getElementById("mbAccentValue"),
-        mbStripe: document.getElementById("mbStripe"),
-
-        // Split View Elements
-        splitDonutDom: document.getElementById("splitDonutDom"),
-        splitDonutSub: document.getElementById("splitDonutSub"),
-        splitDonutAcc: document.getElementById("splitDonutAcc"),
-        splitFormula: document.getElementById("splitFormula"),
-        splitSubBlock: document.getElementById("splitSubBlock"),
-        splitAccBlock: document.getElementById("splitAccBlock"),
-        splitSubVal: document.getElementById("splitSubVal"),
-        splitAccVal: document.getElementById("splitAccVal"),
-
-        // Commentary & Meters
-        insightCommentary: document.getElementById("insightCommentary"),
-        insightTags: document.getElementById("insightTags"),
-        meterContrastVal: document.getElementById("meterContrastVal"),
-        meterImpactVal: document.getElementById("meterImpactVal"),
-        fillContrast: document.getElementById("fillContrast"),
-        fillImpact: document.getElementById("fillImpact"),
-
-        // Toast
-        toastNotice: document.getElementById("toastNotice"),
-        toastMsg: document.getElementById("toastMsg")
-      };
-
-      /* ------------------------------------------------------------------
-         4. 유틸리티 함수 (컬러 계산 및 변환)
-         ------------------------------------------------------------------ */
-      function hexToRgb(hex) {
-        let c = hex.replace('#', '');
-        if (c.length === 3) c = c.split('').map(x => x + x).join('');
-        const num = parseInt(c, 16);
-        return {
-          r: (num >> 16) & 255,
-          g: (num >> 8) & 255,
-          b: num & 255
-        };
-      }
-
-      function rgbToHex(r, g, b) {
-        return "#" + [r, g, b].map(x => {
-          const hex = Math.round(x).toString(16);
-          return hex.length === 1 ? '0' + hex : hex;
-        }).join('').toUpperCase();
-      }
-
-      // 상대 휘도 (Relative Luminance 계산)
-      function getLuminance(hex) {
-        const { r, g, b } = hexToRgb(hex);
-        const a = [r, g, b].map(v => {
-          v /= 255;
-          return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
-        });
-        return a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722;
-      }
-
-      // 대비율 계산 (Contrast Ratio 1:1 ~ 21:1)
-      function getContrastRatio(hex1, hex2) {
-        const l1 = getLuminance(hex1) + 0.05;
-        const l2 = getLuminance(hex2) + 0.05;
-        return l1 > l2 ? l1 / l2 : l2 / l1;
-      }
-
-      /* ------------------------------------------------------------------
-         5. 핵심 알고리즘: 슬라이더 조작 시 100% 비례 배분 로직
-         ------------------------------------------------------------------ */
-      function updateRatioBySlider(changedKey, rawNewValue) {
-        let newVal = parseInt(rawNewValue, 10);
-        if (isNaN(newVal)) newVal = 1;
-        newVal = Math.max(1, Math.min(98, newVal));
-
-        const keys = ['dominant', 'sub', 'accent'];
-        const otherKeys = keys.filter(k => k !== changedKey);
-
-        const lockedOthers = otherKeys.filter(k => state.locked[k]);
-
-        if (lockedOthers.length === 2) {
-          // 나머지 둘 다 잠겨있으면 변경 불가
-          renderUI();
-          showToast("다른 두 색상 비율이 모두 고정(Lock)되어 있어 변경할 수 없습니다.");
-          return;
-        }
-
-        if (lockedOthers.length === 1) {
-          // 하나만 잠겨있을 때: 남은 하나가 잔여분을 모두 수용
-          const fixedKey = lockedOthers[0];
-          const flexibleKey = otherKeys.find(k => k !== fixedKey);
-          const fixedVal = state.ratios[fixedKey];
-
-          // newVal의 최대 상한 클램프
-          const maxAllowed = 100 - fixedVal - 1;
-          if (newVal > maxAllowed) newVal = maxAllowed;
-          if (newVal < 1) newVal = 1;
-
-          state.ratios[changedKey] = newVal;
-          state.ratios[flexibleKey] = 100 - fixedVal - newVal;
-        } else {
-          // 둘 다 자유로운 상태: 기존 비율을 유지하며 비례 배분
-          const remaining = 100 - newVal;
-          const k1 = otherKeys[0];
-          const k2 = otherKeys[1];
-          const currentSum = state.ratios[k1] + state.ratios[k2];
-
-          let v1, v2;
-          if (currentSum === 0) {
-            v1 = Math.floor(remaining / 2);
-            v2 = remaining - v1;
-          } else {
-            const p1 = state.ratios[k1] / currentSum;
-            v1 = Math.round(remaining * p1);
-            if (v1 < 1) v1 = 1;
-            if (v1 > remaining - 1) v1 = remaining - 1;
-            v2 = remaining - v1;
+      /* ---------------------------------------------------------
+         A. THEME & KEYWORDS DATA REPOSITORY
+         --------------------------------------------------------- */
+      const THEME_CONFIGS = {
+        Bloom: {
+          nameKr: "개화 / 꽃의 만개",
+          icon: "🌸",
+          defaultKeywords: ["#유기적곡선", "#화려한그라데이션", "#꽃잎질감"],
+          extraKeywords: ["#생명력의발아", "#로맨틱핑크", "#벨벳꽃받침", "#미세꽃가루"],
+          defaultColors: {
+            dominant: "#F7D6D0",
+            sub: "#B23A48",
+            accent: "#F9D024"
+          },
+          workTitleSample: "화원(花園)의 변주 : 만개하는 생명력",
+          motifTips: {
+            line: "꽃잎을 형상화한 유려한 비대칭 곡선과 아치형 윙 라인",
+            texture: "벨벳 매트 스킨 베이스 위에 촉촉한 로즈 글리터 쉬머",
+            object: "이마 중앙의 입체 골드 꽃술 와이어와 눈꼬리 크리스탈 비즈"
+          },
+          svgMotifRenderer: function(subColor, accentColor) {
+            return `
+              <!-- Bloom Floral Petals & Organic Tendrils -->
+              <path d="M70 120 C40 80 70 30 110 50 C120 70 100 110 70 120 Z" fill="${subColor}" opacity="0.45" />
+              <path d="M330 120 C360 80 330 30 290 50 C280 70 300 110 330 120 Z" fill="${subColor}" opacity="0.45" />
+              <path d="M50 200 C30 150 70 130 95 165 C85 190 65 210 50 200 Z" fill="${subColor}" opacity="0.35" />
+              <path d="M350 200 C370 150 330 130 305 165 C315 190 335 210 350 200 Z" fill="${subColor}" opacity="0.35" />
+              <!-- Floral Pollen Dust -->
+              <circle cx="85" cy="75" r="3" fill="${accentColor}" />
+              <circle cx="315" cy="75" r="3" fill="${accentColor}" />
+              <circle cx="65" cy="155" r="2.5" fill="${accentColor}" />
+              <circle cx="335" cy="155" r="2.5" fill="${accentColor}" />
+            `;
           }
+        },
 
-          state.ratios[changedKey] = newVal;
-          state.ratios[k1] = v1;
-          state.ratios[k2] = v2;
+        Ocean: {
+          nameKr: "심해 / 파도의 유영",
+          icon: "🌊",
+          defaultKeywords: ["#유동적유선형", "#진주빛홀로그램", "#몽환적깊이감"],
+          extraKeywords: ["#심해의압도", "#물거품쉬머", "#비대칭해류", "#오팔산호초"],
+          defaultColors: {
+            dominant: "#0F1E36",
+            sub: "#00B4D8",
+            accent: "#CAF0F8"
+          },
+          workTitleSample: "심연(深淵)의 노래 : 파도의 유동적 궤적",
+          motifTips: {
+            line: "거대한 파도가 밀려오는 듯한 역동적인 포물선과 물결 쉐입",
+            texture: "진주빛 오팔 펄 파우더와 젖은 광택감의 글로시 젤 피니시",
+            object: "관자놀이를 타고 흐르는 투명 아크릴 물방울 파츠와 천연 자개 조각"
+          },
+          svgMotifRenderer: function(subColor, accentColor) {
+            return `
+              <!-- Ocean Waves Ripple Silhouette -->
+              <path d="M40 180 C60 110 120 120 100 80 C85 50 40 90 40 180 Z" fill="${subColor}" opacity="0.4" />
+              <path d="M360 180 C340 110 280 120 300 80 C315 50 360 90 360 180 Z" fill="${subColor}" opacity="0.4" />
+              <path d="M70 260 C60 210 90 200 110 230" stroke="${subColor}" stroke-width="2.5" stroke-linecap="round" fill="none" opacity="0.6" />
+              <path d="M330 260 C340 210 310 200 290 230" stroke="${subColor}" stroke-width="2.5" stroke-linecap="round" fill="none" opacity="0.6" />
+              <!-- Water Droplets -->
+              <circle cx="70" cy="90" r="3.5" fill="${accentColor}" />
+              <circle cx="330" cy="90" r="3.5" fill="${accentColor}" />
+              <circle cx="95" cy="140" r="2.5" fill="${accentColor}" />
+              <circle cx="305" cy="140" r="2.5" fill="${accentColor}" />
+            `;
+          }
+        },
+
+        Butterfly: {
+          nameKr: "나비 / 변태와 비상",
+          icon: "🦋",
+          defaultKeywords: ["#비대칭날개", "#시스루그물망", "#역동적비상"],
+          extraKeywords: ["#환상적변태", "#홀로그램인편", "#섬세한시스루", "#공간확장"],
+          defaultColors: {
+            dominant: "#1A1423",
+            sub: "#7B2CBF",
+            accent: "#00F5D4"
+          },
+          workTitleSample: "호접몽(胡蝶夢) : 허물을 벗고 날아오른 날개",
+          motifTips: {
+            line: "한쪽 눈을 과감히 감싸며 관자놀이 밖으로 뻗어나가는 나비 날개 라인",
+            texture: "나비 날개 가루를 연상시키는 고운 마이크로 글리터와 벨벳 섀도우",
+            object: "얼굴 측면에 부착되는 3D 컷아웃 시스루 패브릭 날개와 네온 스톤"
+          },
+          svgMotifRenderer: function(subColor, accentColor) {
+            return `
+              <!-- Butterfly Wings Frame -->
+              <path d="M100 130 C40 90 30 20 80 40 C110 50 120 90 100 130 Z" fill="${subColor}" opacity="0.5" />
+              <path d="M300 130 C360 90 370 20 320 40 C290 50 280 90 300 130 Z" fill="${subColor}" opacity="0.5" />
+              <path d="M90 140 C50 160 40 210 80 210 C100 210 110 170 90 140 Z" fill="${subColor}" opacity="0.35" />
+              <path d="M310 140 C350 160 360 210 320 210 C300 210 290 170 310 140 Z" fill="${subColor}" opacity="0.35" />
+              <!-- Wing Antennae -->
+              <path d="M185 80 C160 40 130 35 120 45" stroke="${accentColor}" stroke-width="1.8" stroke-linecap="round" fill="none" />
+              <path d="M215 80 C240 40 270 35 280 45" stroke="${accentColor}" stroke-width="1.8" stroke-linecap="round" fill="none" />
+              <circle cx="120" cy="45" r="2.5" fill="${accentColor}" />
+              <circle cx="280" cy="45" r="2.5" fill="${accentColor}" />
+            `;
+          }
+        },
+
+        Flame: {
+          nameKr: "불꽃 / 열정과 변형",
+          icon: "🔥",
+          defaultKeywords: ["#상승하는직선", "#강렬한대비", "#타오르는볼륨"],
+          extraKeywords: ["#타오르는잔상", "#에너지의분출", "#선명한레드", "#화려한스파크"],
+          defaultColors: {
+            dominant: "#1F0808",
+            sub: "#E63946",
+            accent: "#FFB703"
+          },
+          workTitleSample: "영원의 불씨 : 타오르는 열정의 스펙트럼",
+          motifTips: {
+            line: "위로 솟구치듯 뻗어나가는 날카로운 지그재그 라인과 역동적인 화염의 꼬리",
+            texture: "짙은 매트 블랙 스모키와 타오르는 듯한 고발색 아쿠아 컬러 그라데이션",
+            object: "이마와 눈썹 뼈를 따라 상승하는 입체 홀로그램 아크릴 혼(Horn) 장식"
+          },
+          svgMotifRenderer: function(subColor, accentColor) {
+            return `
+              <!-- Blazing Flame Tendrils -->
+              <path d="M110 100 C80 60 100 20 125 10 C120 35 140 50 130 80 Z" fill="${subColor}" opacity="0.55" />
+              <path d="M290 100 C320 60 300 20 275 10 C280 35 260 50 270 80 Z" fill="${subColor}" opacity="0.55" />
+              <path d="M200 60 C190 30 195 10 200 0 C205 10 210 30 200 60 Z" fill="${accentColor}" opacity="0.8" />
+              <path d="M60 180 C40 140 70 120 85 140 C75 160 90 170 60 180 Z" fill="${subColor}" opacity="0.4" />
+              <path d="M340 180 C360 140 330 120 315 140 C325 160 310 170 340 180 Z" fill="${subColor}" opacity="0.4" />
+              <circle cx="125" cy="15" r="2" fill="${accentColor}" />
+              <circle cx="275" cy="15" r="2" fill="${accentColor}" />
+            `;
+          }
+        },
+
+        Moonlight: {
+          nameKr: "달빛 / 밤의 서정",
+          icon: "🌙",
+          defaultKeywords: ["#은은한하이라이트", "#차가운메탈릭", "#고요한신비"],
+          extraKeywords: ["#월광의그림자", "#서정적블루", "#성운의안개", "#은하수글리터"],
+          defaultColors: {
+            dominant: "#0B0C10",
+            sub: "#4F5D75",
+            accent: "#E0E1DD"
+          },
+          workTitleSample: "월하정인(月下情人) : 은빛 달그림자의 서정",
+          motifTips: {
+            line: "초승달의 완만한 호선과 성운처럼 부드럽게 퍼져나가는 스머징 음영",
+            texture: "실버 메탈릭 호일 필름과 서리 내린 듯한 매트 아이스 펄의 결합",
+            object: "이마 중앙에 놓이는 섬세한 달 모양 은세공 와이어와 눈물방울 진주 비즈"
+          },
+          svgMotifRenderer: function(subColor, accentColor) {
+            return `
+              <!-- Crescent Moon Aura & Halo -->
+              <path d="M120 40 C70 40 40 90 50 150 C60 190 90 220 120 220 C80 190 70 110 120 40 Z" fill="${subColor}" opacity="0.35" />
+              <circle cx="200" cy="50" r="28" stroke="${accentColor}" stroke-width="1.2" stroke-dasharray="3 4" fill="none" opacity="0.5" />
+              <!-- Starlight Cross -->
+              <path d="M300 70 L300 90 M290 80 L310 80" stroke="${accentColor}" stroke-width="1.5" stroke-linecap="round" />
+              <circle cx="300" cy="80" r="1.5" fill="#fff" />
+              <path d="M90 90 L90 102 M84 96 L96 96" stroke="${accentColor}" stroke-width="1.2" stroke-linecap="round" />
+            `;
+          }
+        },
+
+        Forest: {
+          nameKr: "원시림 / 생명과 덩굴",
+          icon: "🌿",
+          defaultKeywords: ["#원초적생명력", "#얽힌덩굴선", "#이끼텍스처"],
+          extraKeywords: ["#원시림의수호", "#짙은비리디언", "#나무껍질결", "#신비로운포자"],
+          defaultColors: {
+            dominant: "#132A13",
+            sub: "#31572C",
+            accent: "#90A955"
+          },
+          workTitleSample: "수호의 숲 : 얽힌 덩굴과 원시 생명의 결",
+          motifTips: {
+            line: "마스크 전체를 휘감아 올라가는 비대칭 식물 줄기와 덩굴의 불규칙한 선",
+            texture: "이끼의 보슬보슬한 촉감을 살린 스펀지 스탬핑 기법과 매트 어스 톤",
+            object: "실제 보존 이끼(스칸디아모스) 및 브론즈 나뭇가지 와이어 오브제"
+          },
+          svgMotifRenderer: function(subColor, accentColor) {
+            return `
+              <!-- Forest Vines & Leaf Silhouette -->
+              <path d="M60 220 C60 160 100 110 80 60 C70 30 110 50 110 70 C80 120 120 160 80 230 Z" fill="${subColor}" opacity="0.4" />
+              <path d="M340 220 C340 160 300 110 320 60 C330 30 290 50 290 70 C320 120 280 160 320 230 Z" fill="${subColor}" opacity="0.4" />
+              <circle cx="100" cy="50" r="3" fill="${accentColor}" />
+              <circle cx="300" cy="50" r="3" fill="${accentColor}" />
+              <circle cx="75" cy="110" r="2.5" fill="${accentColor}" />
+              <circle cx="325" cy="110" r="2.5" fill="${accentColor}" />
+            `;
+          }
         }
+      };
 
-        renderUI();
-      }
 
-      /* ------------------------------------------------------------------
-         6. 색상 및 비율 동기화 렌더러
-         ------------------------------------------------------------------ */
-      function renderUI() {
-        const { dominant: rDom, sub: rSub, accent: rAcc } = state.ratios;
-        const { dominant: cDom, sub: cSub, accent: cAcc } = state.colors;
-
-        // 6.1 CSS 변수 업데이트
-        els.root.style.setProperty('--color-dominant', cDom);
-        els.root.style.setProperty('--color-sub', cSub);
-        els.root.style.setProperty('--color-accent', cAcc);
-
-        els.root.style.setProperty('--ratio-dominant', rDom);
-        els.root.style.setProperty('--ratio-sub', rSub);
-        els.root.style.setProperty('--ratio-accent', rAcc);
-
-        // 6.2 배경 앰비언트 글로우 & 로고
-        els.glow1.style.background = cDom;
-        els.glow2.style.background = cSub;
-        els.glow3.style.background = cAcc;
-        els.brandLogoIcon.style.background = `linear-gradient(135deg, ${cDom}, ${cSub}, ${cAcc})`;
-
-        // 6.3 입력 필드 & 슬롯 카드 동기화
-        els.pickerDom.value = cDom;
-        els.pickerSub.value = cSub;
-        els.pickerAcc.value = cAcc;
-
-        els.previewDom.style.backgroundColor = cDom;
-        els.previewSub.style.backgroundColor = cSub;
-        els.previewAcc.style.backgroundColor = cAcc;
-
-        els.hexDom.value = cDom.toUpperCase();
-        els.hexSub.value = cSub.toUpperCase();
-        els.hexAcc.value = cAcc.toUpperCase();
-
-        els.badgeRatioDom.textContent = `${rDom}%`;
-        els.badgeRatioSub.textContent = `${rSub}%`;
-        els.badgeRatioAcc.textContent = `${rAcc}%`;
-
-        // 6.4 슬라이더 동기화
-        els.sliderDom.value = rDom;
-        els.sliderSub.value = rSub;
-        els.sliderAcc.value = rAcc;
-
-        els.valDisplayDom.textContent = `${rDom}%`;
-        els.valDisplaySub.textContent = `${rSub}%`;
-        els.valDisplayAcc.textContent = `${rAcc}%`;
-
-        // 6.5 스택 프로그레스 바 동기화
-        els.barDom.style.width = `${rDom}%`;
-        els.barSub.style.width = `${rSub}%`;
-        els.barAcc.style.width = `${rAcc}%`;
-        els.legendBarDom.textContent = `주조: ${rDom}%`;
-        els.legendBarSub.textContent = `보조: ${rSub}%`;
-        els.legendBarAcc.textContent = `강조: ${rAcc}%`;
-
-        const ratioString = `${rDom} : ${rSub} : ${rAcc}`;
-        els.headerRatioPreview.textContent = ratioString;
-
-        // 6.6 A 뷰: SVG 도넛 차트 세그먼트 (둘레 2 * PI * 75 = 471.238898)
-        const C = 2 * Math.PI * 75; // 471.239
-        const arcDom = (rDom / 100) * C;
-        const arcSub = (rSub / 100) * C;
-        const arcAcc = (rAcc / 100) * C;
-
-        // 도넛 세그먼트 업데이트
-        els.donutSectorDom.style.strokeDasharray = `${arcDom} ${C}`;
-        els.donutSectorDom.style.strokeDashoffset = `0`;
-
-        els.donutSectorSub.style.strokeDasharray = `${arcSub} ${C}`;
-        els.donutSectorSub.style.strokeDashoffset = `-${arcDom}`;
-
-        els.donutSectorAcc.style.strokeDasharray = `${arcAcc} ${C}`;
-        els.donutSectorAcc.style.strokeDashoffset = `-${arcDom + arcSub}`;
-
-        // 도넛 중앙 요약
-        els.centerFormula.textContent = ratioString;
-        els.legendPctDom.textContent = `${rDom}%`;
-        els.legendPctSub.textContent = `${rSub}%`;
-        els.legendPctAcc.textContent = `${rAcc}%`;
-
-        // 6.7 B 뷰: 무드보드 추상화 블록 리사이징 애니메이션
-        // 주조색은 stage 배경 전체
-        els.mbDominantPct.textContent = `${rDom}%`;
-
-        // 보조색 블록: rSub에 따라 너비/높이 가변 (30% ~ 70%)
-        const subW = Math.min(68, Math.max(26, rSub * 1.5));
-        const subH = Math.min(85, Math.max(35, rSub * 2.1));
-        els.mbSubBlock.style.width = `${subW}%`;
-        els.mbSubBlock.style.height = `${subH}%`;
-        els.mbSubTitle.textContent = `Secondary Mood ${rSub}%`;
-
-        // 강조색 포인트 오브젝트: rAcc에 따라 지름 가변 (70px ~ 200px)
-        const accDim = Math.min(220, Math.max(76, 60 + rAcc * 6));
-        els.mbAccentElement.style.width = `${accDim}px`;
-        els.mbAccentElement.style.height = `${accDim}px`;
-        els.mbAccentValue.textContent = `${rAcc}%`;
-
-        // 포인트 스트라이프
-        els.mbStripe.style.width = `${Math.min(60, Math.max(12, rAcc * 3))}%`;
-
-        // 6.8 D 뷰: Split 모드 동기화
-        els.splitDonutDom.style.strokeDasharray = `${arcDom} ${C}`;
-        els.splitDonutDom.style.strokeDashoffset = `0`;
-        els.splitDonutSub.style.strokeDasharray = `${arcSub} ${C}`;
-        els.splitDonutSub.style.strokeDashoffset = `-${arcDom}`;
-        els.splitDonutAcc.style.strokeDasharray = `${arcAcc} ${C}`;
-        els.splitDonutAcc.style.strokeDashoffset = `-${arcDom + arcSub}`;
-        els.splitFormula.textContent = ratioString;
-
-        els.splitSubBlock.style.width = `${Math.min(65, Math.max(25, rSub * 1.6))}%`;
-        els.splitSubVal.textContent = `${rSub}%`;
-        const splitAccDim = Math.min(90, Math.max(45, 35 + rAcc * 3));
-        els.splitAccBlock.style.width = `${splitAccDim}px`;
-        els.splitAccBlock.style.height = `${splitAccDim}px`;
-        els.splitAccVal.textContent = `${rAcc}%`;
-
-        // 6.9 색채학 교육 코멘터리 & 측정기 자동 업데이트
-        updateColorTheoryInsight();
-      }
-
-      /* ------------------------------------------------------------------
-         7. 색채학 분석 및 교육 코멘터리 자동 생성
-         ------------------------------------------------------------------ */
-      function updateColorTheoryInsight() {
-        const { dominant: rDom, sub: rSub, accent: rAcc } = state.ratios;
-        const { dominant: cDom, sub: cSub, accent: cAcc } = state.colors;
-
-        const contrastDomAcc = getContrastRatio(cDom, cAcc);
-        const contrastDomSub = getContrastRatio(cDom, cSub);
-
-        let conceptName = "클래식 뷰티";
-        let commentary = "";
-        let tags = [];
-
-        if (rDom >= 68 && rSub <= 27 && rAcc <= 7) {
-          conceptName = "정석 황금비율";
-          commentary = `현재 설정된 <strong>${rDom} : ${rSub} : ${rAcc}</strong> 비율은 뷰티 배색의 정석입니다. 주조색(${rDom}%)이 넓게 베이스 캔버스를 포용하여 시각적 안정감을 극대화하며, 단 ${rAcc}%의 강조색만으로도 립이나 아이라인 포인트가 선명하게 살아납니다.`;
-          tags = ["시각적 안정감 최상", "데일리 내추럴 룩", "피로도 최소화"];
-        } else if (rDom >= 55 && rSub >= 28) {
-          conceptName = "부드러운 블렌딩";
-          commentary = `보조색 비율이 ${rSub}%로 확대되어 주조색과 보조색 간의 풍부한 그러데이션과 입체 음영이 돋보입니다. 음영 메이크업이나 톤온톤 네일 아트에 이상적인 배색 구조입니다.`;
-          tags = ["소프트 음영 조화", "톤온톤 믹스매치", "치크 쉐이딩 강조"];
-        } else if (rAcc >= 15) {
-          conceptName = "볼드 아방가르드";
-          commentary = `강조색 비율이 ${rAcc}%로 매우 높아져 시선을 강하게 사로잡는 파격적인 뷰티 무드를 형성합니다. 런웨이 패션쇼, 화보(Editorial) 촬영 또는 파티 글램 룩에 적합한 개성 배색입니다.`;
-          tags = ["강렬한 시선 집중", "화보/런웨이 메이크업", "하이 임팩트"];
-        } else {
-          conceptName = "모던 밸런스";
-          commentary = `주조색(${rDom}%), 보조색(${rSub}%), 강조색(${rAcc}%)이 균형을 이루며 감각적인 모던 룩을 완성합니다. 색상 간의 명도 대비를 고려하여 립이나 블러셔의 경계를 부드럽게 블러링하는 것을 추천합니다.`;
-          tags = ["세련된 트렌드 룩", "모던 콘트라스트", "감각적 조화"];
+      /* ---------------------------------------------------------
+         B. APPLICATION STATE
+         --------------------------------------------------------- */
+      const state = {
+        currentTheme: "Bloom",
+        selectedKeywords: ["#유기적곡선", "#화려한그라데이션", "#꽃잎질감"],
+        colors: {
+          dominant: "#F7D6D0",
+          sub: "#B23A48",
+          accent: "#F9D024"
+        },
+        motif: {
+          line: "꽃잎을 형상화한 유려한 비대칭 곡선과 아치형 윙 라인",
+          texture: "벨벳 매트 스킨 베이스 위에 촉촉한 로즈 글리터 쉬머",
+          object: "이마 중앙의 입체 골드 꽃술 와이어와 눈꼬리 크리스탈 비즈"
+        },
+        meta: {
+          workTitle: "화원(花園)의 변주 : 만개하는 생명력",
+          authorName: "김민서",
+          authorClass: "뷰티미용학과 1학년 A반",
+          date: new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' })
         }
+      };
 
-        els.centerConcept.textContent = conceptName;
-        els.insightCommentary.innerHTML = commentary;
 
-        // 태그 렌더링
-        els.insightTags.innerHTML = tags.map(t => `<span class="insight-pill">${t}</span>`).join('');
+      /* ---------------------------------------------------------
+         C. DOM ELEMENT REFERENCES
+         --------------------------------------------------------- */
+      const subthemeButtons = document.querySelectorAll('.subtheme-btn');
+      const keywordChipsContainer = document.getElementById('keywordChipsContainer');
+      
+      // Color Pickers & Hex Inputs
+      const pickerDominant = document.getElementById('pickerDominant');
+      const pickerSub = document.getElementById('pickerSub');
+      const pickerAccent = document.getElementById('pickerAccent');
 
-        // 명도 대비율 표시
-        const contrastScore = Math.min(100, Math.round((contrastDomAcc / 10) * 100));
-        els.fillContrast.style.width = `${contrastScore}%`;
-        if (contrastDomAcc >= 4.5) {
-          els.meterContrastVal.textContent = `매우 높음 (${contrastDomAcc.toFixed(1)}:1)`;
-          els.fillContrast.style.background = "#34d399";
-        } else if (contrastDomAcc >= 3.0) {
-          els.meterContrastVal.textContent = `적정 조화 (${contrastDomAcc.toFixed(1)}:1)`;
-          els.fillContrast.style.background = "#fbbf24";
-        } else {
-          els.meterContrastVal.textContent = `소프트 무드 (${contrastDomAcc.toFixed(1)}:1)`;
-          els.fillContrast.style.background = "#f87171";
-        }
+      const hexDominant = document.getElementById('hexDominant');
+      const hexSub = document.getElementById('hexSub');
+      const hexAccent = document.getElementById('hexAccent');
 
-        // 시선 집중도 계측 (강조색 비율과 대비의 복합치)
-        const impactScore = Math.min(100, Math.round((rAcc * 4) + (contrastDomAcc * 4)));
-        els.fillImpact.style.width = `${impactScore}%`;
-        if (impactScore > 75) {
-          els.meterImpactVal.textContent = "임팩트 극대화 (High Focus)";
-        } else if (impactScore > 45) {
-          els.meterImpactVal.textContent = "자연스러운 포인트 (Moderate)";
-        } else {
-          els.meterImpactVal.textContent = "은은한 뉘앙스 (Subtle)";
-        }
-      }
+      const previewDominant = document.getElementById('previewDominant');
+      const previewSub = document.getElementById('previewSub');
+      const previewAccent = document.getElementById('previewAccent');
 
-      /* ------------------------------------------------------------------
-         8. 프리셋 렌더링 & 클릭 핸들러
-         ------------------------------------------------------------------ */
-      function renderPresets() {
-        els.presetsGrid.innerHTML = "";
-        PRESETS.forEach((preset, idx) => {
-          const card = document.createElement("div");
-          card.className = "preset-card";
-          card.title = `${preset.name} (${preset.tone}) - ${preset.desc}`;
-          
-          card.innerHTML = `
-            <div class="preset-swatches">
-              <div class="preset-swatch-slice" style="width: 55%; background-color: ${preset.colors.dominant};"></div>
-              <div class="preset-swatch-slice" style="width: 30%; background-color: ${preset.colors.sub};"></div>
-              <div class="preset-swatch-slice" style="width: 15%; background-color: ${preset.colors.accent};"></div>
-            </div>
-            <div class="preset-info">
-              <div class="preset-name">${preset.name}</div>
-              <div class="preset-tone">${preset.tone}</div>
-            </div>
-          `;
+      // Ratio Bar Segments
+      const ratioBarDominant = document.getElementById('ratioBarDominant');
+      const ratioBarSub = document.getElementById('ratioBarSub');
+      const ratioBarAccent = document.getElementById('ratioBarAccent');
 
-          card.addEventListener("click", () => {
-            state.colors.dominant = preset.colors.dominant;
-            state.colors.sub = preset.colors.sub;
-            state.colors.accent = preset.colors.accent;
+      // Text Inputs
+      const inputLineForm = document.getElementById('inputLineForm');
+      const inputTexture = document.getElementById('inputTexture');
+      const inputObject = document.getElementById('inputObject');
 
-            state.ratios.dominant = preset.ratio.dominant;
-            state.ratios.sub = preset.ratio.sub;
-            state.ratios.accent = preset.ratio.accent;
+      // Board Elements
+      const boardThemeIcon = document.getElementById('boardThemeIcon');
+      const boardThemeBadgeText = document.getElementById('boardThemeBadgeText');
+      const boardWorkTitle = document.getElementById('boardWorkTitle');
+      const authorName = document.getElementById('authorName');
+      const authorClass = document.getElementById('authorClass');
+      const boardDate = document.getElementById('boardDate');
 
-            // 프리셋 버튼 활성화 갱신
-            document.querySelectorAll(".chip-btn").forEach(chip => chip.classList.remove("active"));
-            renderUI();
-            showToast(`"${preset.name}" 뷰티 프리셋이 적용되었습니다.`);
-          });
+      const boardSwatchDominant = document.getElementById('boardSwatchDominant');
+      const boardSwatchSub = document.getElementById('boardSwatchSub');
+      const boardSwatchAccent = document.getElementById('boardSwatchAccent');
 
-          els.presetsGrid.appendChild(card);
-        });
-      }
+      const boardHexDominant = document.getElementById('boardHexDominant');
+      const boardHexSub = document.getElementById('boardHexSub');
+      const boardHexAccent = document.getElementById('boardHexAccent');
 
-      /* ------------------------------------------------------------------
-         9. 역할 스왑 (Role Swap) 인터랙션
-         ------------------------------------------------------------------ */
-      // 9.1 3색 순환 교체 (Rotate Roles): 주조 -> 보조 -> 강조 -> 주조
-      function rotateRoles() {
-        const oldDom = state.colors.dominant;
-        const oldSub = state.colors.sub;
-        const oldAcc = state.colors.accent;
+      const boardKeywordsList = document.getElementById('boardKeywordsList');
 
-        state.colors.dominant = oldSub;
-        state.colors.sub = oldAcc;
-        state.colors.accent = oldDom;
+      const boardSummaryLine = document.getElementById('boardSummaryLine');
+      const boardSummaryTexture = document.getElementById('boardSummaryTexture');
+      const boardSummaryObject = document.getElementById('boardSummaryObject');
 
-        renderUI();
-        showToast("색상 역할이 1칸씩 순환 회전되었습니다. 주조색이 바뀌며 전체 분위기가 달라집니다!");
-      }
+      // SVG Art Mask & Glow Elements
+      const maskAmbientGlow = document.getElementById('maskAmbientGlow');
+      const stopSkinMain = document.getElementById('stopSkinMain');
+      const stopSkinShadow = document.getElementById('stopSkinShadow');
+      const stopSubLight = document.getElementById('stopSubLight');
+      const stopSubDark = document.getElementById('stopSubDark');
+      const maskCheekLeft = document.getElementById('maskCheekLeft');
+      const maskCheekRight = document.getElementById('maskCheekRight');
+      const maskLipAccent = document.getElementById('maskLipAccent');
+      const maskGraphicWingLeft = document.getElementById('maskGraphicWingLeft');
+      const maskGraphicWingRight = document.getElementById('maskGraphicWingRight');
+      const maskJewelCenter = document.getElementById('maskJewelCenter');
+      const maskJewelDot1 = document.getElementById('maskJewelDot1');
+      const maskJewelDot2 = document.getElementById('maskJewelDot2');
+      const maskJewelDot3 = document.getElementById('maskJewelDot3');
+      const maskJewelDot4 = document.getElementById('maskJewelDot4');
+      const maskGemLeft = document.getElementById('maskGemLeft');
+      const maskGemRight = document.getElementById('maskGemRight');
+      const maskChinDot = document.getElementById('maskChinDot');
+      const dynamicThemeMotifGroup = document.getElementById('dynamicThemeMotifGroup');
 
-      // 9.2 주조 ⇄ 보조 교환
-      function swapDomSub() {
-        const temp = state.colors.dominant;
-        state.colors.dominant = state.colors.sub;
-        state.colors.sub = temp;
-        renderUI();
-        showToast("주조색과 보조색이 서로 맞교환되었습니다.");
-      }
+      // Action Buttons
+      const btnExportImage = document.getElementById('btnExportImage');
+      const btnPrintPdf = document.getElementById('btnPrintPdf');
+      const btnCopyText = document.getElementById('btnCopyText');
+      const btnRandomInspire = document.getElementById('btnRandomInspire');
+      const toastMsg = document.getElementById('toastMsg');
+      const toastContent = document.getElementById('toastContent');
+      const toastIcon = document.getElementById('toastIcon');
 
-      // 9.3 주조 ⇄ 강조 교환
-      function swapDomAcc() {
-        const temp = state.colors.dominant;
-        state.colors.dominant = state.colors.accent;
-        state.colors.accent = temp;
-        renderUI();
-        showToast("주조색과 강조색이 서로 맞교환되었습니다. 콘셉트의 극적인 반전을 확인해보세요!");
-      }
+      // Mobile Tabs
+      const tabStudio = document.getElementById('tabStudio');
+      const tabCanvas = document.getElementById('tabCanvas');
 
-      /* ------------------------------------------------------------------
-         10. 배색 리포트 복사 & 토스트 알림
-         ------------------------------------------------------------------ */
-      function exportReport() {
-        const report = `[K-뷰티 컬러 면적비 설계 리포트]
-- 주조색 (Dominant): ${state.colors.dominant.toUpperCase()} (${state.ratios.dominant}%) - 베이스 & 배경
-- 보조색 (Secondary): ${state.colors.sub.toUpperCase()} (${state.ratios.sub}%) - 조화 & 음영
-- 강조색 (Accent): ${state.colors.accent.toUpperCase()} (${state.ratios.accent}%) - 포인트 & 시선집중
-- 배색 콘셉트: ${els.centerConcept.textContent} (${state.ratios.dominant}:${state.ratios.sub}:${state.ratios.accent})
-- 명도 대비율: ${els.meterContrastVal.textContent}
-생성 도구: 뷰티 컬러 밸런스 시뮬레이터 (6주차/13주차 색채학 실습)`;
 
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(report).then(() => {
-            showToast("배색 리포트가 클립보드에 복사되었습니다! 과제 또는 포트폴리오에 붙여넣으세요.");
-          }).catch(() => {
-            fallbackCopy(report);
-          });
-        } else {
-          fallbackCopy(report);
-        }
-      }
-
-      function fallbackCopy(text) {
-        const ta = document.createElement("textarea");
-        ta.value = text;
-        ta.style.position = "fixed";
-        ta.style.opacity = "0";
-        document.body.appendChild(ta);
-        ta.select();
-        try {
-          document.execCommand('copy');
-          showToast("배색 정보가 클립보드에 복사되었습니다!");
-        } catch (err) {
-          alert(text);
-        }
-        document.body.removeChild(ta);
-      }
-
-      let toastTimeout = null;
-      function showToast(msg) {
-        els.toastMsg.textContent = msg;
-        els.toastNotice.classList.add("show");
-        if (toastTimeout) clearTimeout(toastTimeout);
-        toastTimeout = setTimeout(() => {
-          els.toastNotice.classList.remove("show");
+      /* ---------------------------------------------------------
+         D. RENDER & UPDATE FUNCTIONS
+         --------------------------------------------------------- */
+      
+      // 1. Show Toast Notification
+      function showToast(text, icon = '✨') {
+        toastContent.textContent = text;
+        toastIcon.textContent = icon;
+        toastMsg.classList.add('show');
+        clearTimeout(toastMsg._timer);
+        toastMsg._timer = setTimeout(() => {
+          toastMsg.classList.remove('show');
         }, 3200);
       }
 
-      /* ------------------------------------------------------------------
-         11. 테마 토글 (Dark / Light 모드)
-         ------------------------------------------------------------------ */
-      function toggleTheme() {
-        state.theme = state.theme === "dark" ? "light" : "dark";
-        els.body.setAttribute("data-theme", state.theme);
-        
-        // 아이콘 교체
-        if (state.theme === "light") {
-          els.themeIcon.innerHTML = `
-            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-          `;
+      // 2. Render Keywords Chips for current Theme
+      function renderKeywordChips() {
+        const themeData = THEME_CONFIGS[state.currentTheme];
+        const allKeywords = [...themeData.defaultKeywords, ...themeData.extraKeywords];
+
+        keywordChipsContainer.innerHTML = '';
+        allKeywords.forEach(kw => {
+          const isSelected = state.selectedKeywords.includes(kw);
+          const chip = document.createElement('button');
+          chip.type = 'button';
+          chip.className = `keyword-chip ${isSelected ? 'selected' : ''}`;
+          chip.innerHTML = `${kw} <span class="check-icon">${isSelected ? '✓' : '+'}</span>`;
+          chip.addEventListener('click', () => {
+            toggleKeyword(kw);
+          });
+          keywordChipsContainer.appendChild(chip);
+        });
+
+        // Also render on the Presentation Board
+        renderBoardKeywords();
+      }
+
+      function toggleKeyword(kw) {
+        if (state.selectedKeywords.includes(kw)) {
+          if (state.selectedKeywords.length <= 1) {
+            showToast("최소 1개 이상의 키워드가 필요합니다.", "⚠️");
+            return;
+          }
+          state.selectedKeywords = state.selectedKeywords.filter(item => item !== kw);
         } else {
-          els.themeIcon.innerHTML = `
-            <circle cx="12" cy="12" r="5"/>
-            <line x1="12" y1="1" x2="12" y2="3"/>
-            <line x1="12" y1="21" x2="12" y2="23"/>
-            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
-            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-            <line x1="1" y1="12" x2="3" y2="12"/>
-            <line x1="21" y1="12" x2="23" y2="12"/>
-            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
-            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-          `;
+          state.selectedKeywords.push(kw);
+        }
+        renderKeywordChips();
+      }
+
+      function renderBoardKeywords() {
+        boardKeywordsList.innerHTML = '';
+        state.selectedKeywords.forEach(kw => {
+          const tag = document.createElement('span');
+          tag.className = 'board-keyword-tag';
+          tag.textContent = kw;
+          boardKeywordsList.appendChild(tag);
+        });
+      }
+
+      // 3. Update Colors across all elements & SVG Mask
+      function applyColors() {
+        const { dominant, sub, accent } = state.colors;
+
+        // Input and previews
+        pickerDominant.value = dominant;
+        pickerSub.value = sub;
+        pickerAccent.value = accent;
+
+        hexDominant.value = dominant.toUpperCase();
+        hexSub.value = sub.toUpperCase();
+        hexAccent.value = accent.toUpperCase();
+
+        previewDominant.style.backgroundColor = dominant;
+        previewSub.style.backgroundColor = sub;
+        previewAccent.style.backgroundColor = accent;
+
+        // Visualizer ratio bar
+        ratioBarDominant.style.backgroundColor = dominant;
+        ratioBarSub.style.backgroundColor = sub;
+        ratioBarAccent.style.backgroundColor = accent;
+
+        // Board Swatches
+        boardSwatchDominant.style.backgroundColor = dominant;
+        boardSwatchSub.style.backgroundColor = sub;
+        boardSwatchAccent.style.backgroundColor = accent;
+
+        boardHexDominant.textContent = dominant.toUpperCase();
+        boardHexSub.textContent = sub.toUpperCase();
+        boardHexAccent.textContent = accent.toUpperCase();
+
+        // SVG Mask Rendering & Gradients
+        maskAmbientGlow.style.backgroundColor = dominant;
+
+        if (stopSkinMain) stopSkinMain.setAttribute('stop-color', dominant);
+        if (stopSkinShadow) stopSkinShadow.setAttribute('stop-color', dominant);
+
+        if (stopSubLight) stopSubLight.setAttribute('stop-color', sub);
+        if (stopSubDark) stopSubDark.setAttribute('stop-color', sub);
+
+        if (maskCheekLeft) maskCheekLeft.setAttribute('fill', sub);
+        if (maskCheekRight) maskCheekRight.setAttribute('fill', sub);
+        if (maskLipAccent) maskLipAccent.setAttribute('fill', sub);
+
+        if (maskGraphicWingLeft) maskGraphicWingLeft.setAttribute('stroke', accent);
+        if (maskGraphicWingRight) maskGraphicWingRight.setAttribute('stroke', accent);
+
+        if (maskJewelCenter) maskJewelCenter.setAttribute('fill', accent);
+        if (maskJewelDot1) maskJewelDot1.setAttribute('fill', accent);
+        if (maskJewelDot2) maskJewelDot2.setAttribute('fill', accent);
+        if (maskJewelDot3) maskJewelDot3.setAttribute('fill', accent);
+        if (maskJewelDot4) maskJewelDot4.setAttribute('fill', accent);
+        if (maskGemLeft) maskGemLeft.setAttribute('fill', accent);
+        if (maskGemRight) maskGemRight.setAttribute('fill', accent);
+        if (maskChinDot) maskChinDot.setAttribute('fill', accent);
+
+        // Re-render theme motif overlay inside SVG with latest colors
+        renderThemeSvgMotif();
+      }
+
+      // 4. Render Dynamic Theme Motif in SVG
+      function renderThemeSvgMotif() {
+        const themeData = THEME_CONFIGS[state.currentTheme];
+        if (themeData && themeData.svgMotifRenderer) {
+          dynamicThemeMotifGroup.innerHTML = themeData.svgMotifRenderer(state.colors.sub, state.colors.accent);
         }
       }
 
-      /* ------------------------------------------------------------------
-         12. 이벤트 리스너 등록 & 초기화
-         ------------------------------------------------------------------ */
-      function initEventListeners() {
-        // 컬러 피커 변경 이벤트
-        els.pickerDom.addEventListener("input", (e) => {
-          state.colors.dominant = e.target.value;
-          renderUI();
-        });
-        els.pickerSub.addEventListener("input", (e) => {
-          state.colors.sub = e.target.value;
-          renderUI();
-        });
-        els.pickerAcc.addEventListener("input", (e) => {
-          state.colors.accent = e.target.value;
-          renderUI();
+      // 5. Switch Theme
+      function selectTheme(themeKey, autoPopulatePalette = true) {
+        state.currentTheme = themeKey;
+        const themeData = THEME_CONFIGS[themeKey];
+
+        // Button active state
+        subthemeButtons.forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.subtheme === themeKey);
         });
 
-        // HEX 텍스트 직접 입력 이벤트
-        function handleHexInput(inputEl, roleKey) {
-          inputEl.addEventListener("change", (e) => {
-            let val = e.target.value.trim();
-            if (!val.startsWith('#')) val = '#' + val;
-            if (/^#[0-9A-Fa-f]{6}$/.test(val)) {
-              state.colors[roleKey] = val;
-              renderUI();
-            } else {
-              inputEl.value = state.colors[roleKey].toUpperCase();
-              showToast("올바른 6자리 HEX 컬러 코드(#RRGGBB)를 입력해주세요.");
+        // Update default keywords
+        state.selectedKeywords = [...themeData.defaultKeywords];
+        renderKeywordChips();
+
+        // Update board badge
+        boardThemeIcon.textContent = themeData.icon;
+        boardThemeBadgeText.textContent = `NATURAL VARIATIONS • ${themeKey.toUpperCase()}`;
+
+        if (autoPopulatePalette) {
+          state.colors = { ...themeData.defaultColors };
+          applyColors();
+        } else {
+          renderThemeSvgMotif();
+        }
+
+        showToast(`'${themeData.nameKr}' 소주제가 선택되었습니다.`, themeData.icon);
+      }
+
+      // 6. Update Motif Text Summary
+      function updateMotifSummary() {
+        state.motif.line = inputLineForm.value.trim();
+        state.motif.texture = inputTexture.value.trim();
+        state.motif.object = inputObject.value.trim();
+
+        boardSummaryLine.textContent = state.motif.line || '미입력 (선과 형태 구상 필요)';
+        boardSummaryTexture.textContent = state.motif.texture || '미입력 (질감 대비 구상 필요)';
+        boardSummaryObject.textContent = state.motif.object || '미입력 (3D 오브제 구상 필요)';
+      }
+
+
+      /* ---------------------------------------------------------
+         E. EVENT LISTENERS SETUP
+         --------------------------------------------------------- */
+      
+      // Subtheme buttons click
+      subthemeButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const themeKey = btn.dataset.subtheme;
+          selectTheme(themeKey, true);
+        });
+      });
+
+      // Color Picker Events
+      function setupColorPicker(picker, hexInput, key) {
+        picker.addEventListener('input', (e) => {
+          state.colors[key] = e.target.value;
+          applyColors();
+        });
+
+        hexInput.addEventListener('change', (e) => {
+          let val = e.target.value.trim();
+          if (!val.startsWith('#')) val = '#' + val;
+          if (/^#[0-9A-F]{6}$/i.test(val)) {
+            state.colors[key] = val;
+            applyColors();
+          } else {
+            hexInput.value = state.colors[key].toUpperCase();
+            showToast("올바른 HEX 컬러 코드(예: #FF0055)를 입력하세요.", "⚠️");
+          }
+        });
+      }
+
+      setupColorPicker(pickerDominant, hexDominant, 'dominant');
+      setupColorPicker(pickerSub, hexSub, 'sub');
+      setupColorPicker(pickerAccent, hexAccent, 'accent');
+
+      // Preset Dots Click
+      document.querySelectorAll('.preset-dot').forEach(dot => {
+        dot.addEventListener('click', () => {
+          const color = dot.dataset.color;
+          const parentGroup = dot.closest('.color-row-item');
+          if (parentGroup.contains(pickerDominant)) {
+            state.colors.dominant = color;
+          } else if (parentGroup.contains(pickerSub)) {
+            state.colors.sub = color;
+          } else if (parentGroup.contains(pickerAccent)) {
+            state.colors.accent = color;
+          }
+          applyColors();
+        });
+      });
+
+      // Text Input Change Listeners
+      [inputLineForm, inputTexture, inputObject].forEach(input => {
+        input.addEventListener('input', updateMotifSummary);
+      });
+
+      // Quick Inspiration Tags Click
+      document.querySelectorAll('.quick-tag').forEach(tag => {
+        tag.addEventListener('click', () => {
+          const targetId = tag.dataset.target;
+          const targetInput = document.getElementById(targetId);
+          if (targetInput) {
+            const currentVal = targetInput.value.trim();
+            const tagText = tag.textContent.trim();
+            if (!currentVal) {
+              targetInput.value = tagText;
+            } else if (!currentVal.includes(tagText)) {
+              targetInput.value = currentVal + ' + ' + tagText;
             }
+            updateMotifSummary();
+            showToast(`'${tagText}' 키워드가 추가되었습니다.`, "💡");
+          }
+        });
+      });
+
+      // Board Title & Author Editable Fields
+      boardWorkTitle.addEventListener('input', (e) => {
+        state.meta.workTitle = e.target.value;
+      });
+      authorName.addEventListener('input', (e) => {
+        state.meta.authorName = e.target.value;
+      });
+      authorClass.addEventListener('input', (e) => {
+        state.meta.authorClass = e.target.value;
+      });
+
+      // Random Inspiration Generator
+      btnRandomInspire.addEventListener('click', () => {
+        const themeKeys = Object.keys(THEME_CONFIGS);
+        const randomTheme = themeKeys[Math.floor(Math.random() * themeKeys.length)];
+        const themeData = THEME_CONFIGS[randomTheme];
+
+        selectTheme(randomTheme, true);
+
+        // Pick 3 random keywords
+        const allKeywords = [...themeData.defaultKeywords, ...themeData.extraKeywords];
+        const shuffled = allKeywords.sort(() => 0.5 - Math.random());
+        state.selectedKeywords = shuffled.slice(0, 3);
+        renderKeywordChips();
+
+        // Sample values
+        boardWorkTitle.value = themeData.workTitleSample;
+        state.meta.workTitle = themeData.workTitleSample;
+
+        inputLineForm.value = themeData.motifTips.line;
+        inputTexture.value = themeData.motifTips.texture;
+        inputObject.value = themeData.motifTips.object;
+        updateMotifSummary();
+
+        showToast(`'${randomTheme}' 영감 프리셋이 적용되었습니다!`, "🎨");
+      });
+
+      // Copy Brief as Text
+      btnCopyText.addEventListener('click', () => {
+        const textContent = `[아트마스크 디자인 기획서 (Art Mask Brief)]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+■ 작품명: ${boardWorkTitle.value || '미정'}
+■ 기획자: ${authorName.value || '학생'} (${authorClass.value || '미기재'})
+■ 일자: ${boardDate.textContent}
+────────────────────────────────
+1. 대주제: 자연의 변주 (Variations of Nature)
+   - 소주제: ${state.currentTheme} (${THEME_CONFIGS[state.currentTheme].nameKr})
+   - 감성 키워드: ${state.selectedKeywords.join(', ')}
+
+2. 컬러 팔레트 (60:30:10)
+   - 주조색 (60%): ${state.colors.dominant} (마스크 베이스/배경)
+   - 보조색 (30%): ${state.colors.sub} (아이섀도우/조형 패턴)
+   - 강조색 (10%): ${state.colors.accent} (라인/크리스탈/비즈)
+
+3. 조형 및 모티브 요소
+   - 선과 형태: ${state.motif.line || '미입력'}
+   - 질감 및 텍스처: ${state.motif.texture || '미입력'}
+   - 오브제 포인트: ${state.motif.object || '미입력'}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
+
+        navigator.clipboard.writeText(textContent).then(() => {
+          showToast("기획서 전체 내용이 클립보드에 복사되었습니다.", "📋");
+        }).catch(() => {
+          showToast("클립보드 접근 권한이 없어 복사에 실패했습니다.", "❌");
+        });
+      });
+
+      // Print / Save as PDF
+      btnPrintPdf.addEventListener('click', () => {
+        window.print();
+      });
+
+      // Export Board as High-Res PNG Image
+      btnExportImage.addEventListener('click', () => {
+        const board = document.getElementById('presentationBoard');
+        showToast("시안 보드를 고해상도 이미지로 변환 중입니다...", "⏳");
+
+        // Use html2canvas
+        if (typeof html2canvas !== 'undefined') {
+          html2canvas(board, {
+            backgroundColor: '#12151e',
+            scale: 2, // 2x Retina quality
+            useCORS: true,
+            logging: false
+          }).then(canvas => {
+            const imgData = canvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            const sanitizedTitle = (boardWorkTitle.value || 'ArtMask_Brief').replace(/[\s\/:*?"<>|]/g, '_');
+            link.download = `ArtMask_${state.currentTheme}_${sanitizedTitle}.png`;
+            link.href = imgData;
+            link.click();
+            showToast("시안 보드 PNG 다운로드가 완료되었습니다!", "✅");
+          }).catch(err => {
+            console.error(err);
+            showToast("이미지 캡처 중 오류가 발생하여 기본 인쇄 모드를 실행합니다.", "⚠️");
+            window.print();
           });
+        } else {
+          window.print();
         }
-        handleHexInput(els.hexDom, 'dominant');
-        handleHexInput(els.hexSub, 'sub');
-        handleHexInput(els.hexAcc, 'accent');
+      });
 
-        // 슬라이더 변경 이벤트
-        els.sliderDom.addEventListener("input", (e) => updateRatioBySlider('dominant', e.target.value));
-        els.sliderSub.addEventListener("input", (e) => updateRatioBySlider('sub', e.target.value));
-        els.sliderAcc.addEventListener("input", (e) => updateRatioBySlider('accent', e.target.value));
+      // Mobile Responsive View Tab Toggle
+      tabStudio.addEventListener('click', () => {
+        document.body.classList.remove('show-canvas-only');
+        document.body.classList.add('show-studio-only');
+        tabStudio.classList.add('active');
+        tabCanvas.classList.remove('active');
+      });
 
-        // 자물쇠(Lock) 토글 이벤트
-        function bindLock(btn, key) {
-          btn.addEventListener("click", () => {
-            state.locked[key] = !state.locked[key];
-            btn.classList.toggle("locked", state.locked[key]);
-            const krName = key === 'dominant' ? '주조색' : key === 'sub' ? '보조색' : '강조색';
-            showToast(`${krName} 비율 고정이 ${state.locked[key] ? '활성화' : '해제'}되었습니다.`);
-          });
-        }
-        bindLock(els.lockDom, 'dominant');
-        bindLock(els.lockSub, 'sub');
-        bindLock(els.lockAcc, 'accent');
+      tabCanvas.addEventListener('click', () => {
+        document.body.classList.remove('show-studio-only');
+        document.body.classList.add('show-canvas-only');
+        tabCanvas.classList.add('active');
+        tabStudio.classList.remove('active');
+      });
 
-        // 추천 비율 칩 버튼 클릭
-        document.querySelectorAll(".chip-btn").forEach(btn => {
-          btn.addEventListener("click", () => {
-            document.querySelectorAll(".chip-btn").forEach(c => c.classList.remove("active"));
-            btn.classList.add("active");
 
-            state.ratios.dominant = parseInt(btn.dataset.rDom, 10);
-            state.ratios.sub = parseInt(btn.dataset.rSub, 10);
-            state.ratios.accent = parseInt(btn.dataset.rAcc, 10);
-
-            // 락 해제
-            state.locked.dominant = false;
-            state.locked.sub = false;
-            state.locked.accent = false;
-            els.lockDom.classList.remove("locked");
-            els.lockSub.classList.remove("locked");
-            els.lockAcc.classList.remove("locked");
-
-            renderUI();
-            showToast(`${state.ratios.dominant} : ${state.ratios.sub} : ${state.ratios.accent} 비율로 변경되었습니다.`);
-          });
-        });
-
-        // 뷰 탭 전환
-        els.tabs.forEach(tab => {
-          tab.addEventListener("click", () => {
-            els.tabs.forEach(t => t.classList.remove("active"));
-            tab.classList.add("active");
-
-            const targetId = tab.dataset.target;
-            els.viewPanes.forEach(pane => {
-              pane.classList.remove("active");
-              if (pane.id === targetId) {
-                pane.classList.add("active");
-              }
-            });
-          });
-        });
-
-        // 역할 스왑 버튼
-        els.btnRotateRoles.addEventListener("click", rotateRoles);
-        els.btnSwapDomSub.addEventListener("click", swapDomSub);
-        els.btnSwapDomAcc.addEventListener("click", swapDomAcc);
-
-        // 리셋 및 유틸 버튼
-        els.btnResetGolden.addEventListener("click", () => {
-          state.ratios.dominant = 70;
-          state.ratios.sub = 25;
-          state.ratios.accent = 5;
-          state.locked = { dominant: false, sub: false, accent: false };
-          els.lockDom.classList.remove("locked");
-          els.lockSub.classList.remove("locked");
-          els.lockAcc.classList.remove("locked");
-
-          document.querySelectorAll(".chip-btn").forEach(c => c.classList.remove("active"));
-          const firstChip = document.querySelector(".chip-btn[data-r-dom='70']");
-          if (firstChip) firstChip.classList.add("active");
-
-          renderUI();
-          showToast("뷰티 배색의 기본인 70 : 25 : 5 황금비로 초기화되었습니다.");
-        });
-
-        els.btnExportReport.addEventListener("click", exportReport);
-        els.btnThemeToggle.addEventListener("click", toggleTheme);
-      }
-
-      /* ------------------------------------------------------------------
-         13. 앱 부트스트랩 (Init)
-         ------------------------------------------------------------------ */
-      renderPresets();
-      initEventListeners();
-      renderUI();
+      /* ---------------------------------------------------------
+         F. INITIALIZATION
+         --------------------------------------------------------- */
+      boardDate.textContent = state.meta.date;
+      selectTheme("Bloom", true);
+      updateMotifSummary();
 
     })();
   </script>
